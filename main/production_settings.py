@@ -6,7 +6,7 @@ when you are in production environment.
 
 import os
 from pathlib import Path
-import dj_database_url
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +26,7 @@ ALLOWED_HOSTS = ["*"]
 
 
 # Comment out the following line and place your railway URL, and your production URL in the array.
-CSRF_TRUSTED_ORIGINS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["https://pharmacy-api-production.up.railway.app"]
 
 
 # Application definition
@@ -123,10 +123,7 @@ USE_TZ = True
 
 
 
-# CORS_ALLOWED_ORIGINS = [
-#     "https://pharmacy-api-production.up.railway.app",
-# ]
-
+CORS_ALLOWED_ORIGINS = ["https://pharmacy-api-production.up.railway.app"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
