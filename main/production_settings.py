@@ -25,7 +25,7 @@ ALLOWED_HOSTS = ["pharmacy-api-production.up.railway.app"]
 
 
 # Comment out the following line and place your railway URL, and your production URL in the array.
-CSRF_TRUSTED_ORIGINS = ["https://pharmacy-api-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = ["pharmacy-api-production.up.railway.app"]
 
 
 # Application definition
