@@ -21,7 +21,7 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["https://pharmacy-api-production.up.railway.app"]
+ALLOWED_HOSTS = ["pharmacy-api-production.up.railway.app"]
 
 
 # Comment out the following line and place your railway URL, and your production URL in the array.
@@ -121,9 +121,9 @@ USE_TZ = True
 
 
 
-CORS_ALLOWED_ORIGINS = [
-    "https://pharmacy-api-production.up.railway.app",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://pharmacy-api-production.up.railway.app",
+# ]
 
 
 # Static files (CSS, JavaScript, Images)
