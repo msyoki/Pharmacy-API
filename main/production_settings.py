@@ -23,7 +23,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ['https://pharmacy-api-production.up.railway.app']
 
 # Comment out the following line and place your railway URL, and your production URL in the array.
 # CSRF_TRUSTED_ORIGINS = ["*"]
@@ -119,6 +118,12 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
+
+
+
+CORS_ALLOWED_ORIGINS = [
+    "https://pharmacy-api-production.up.railway.app",
+]
 
 
 # Static files (CSS, JavaScript, Images)
