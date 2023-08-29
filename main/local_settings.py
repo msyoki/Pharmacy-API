@@ -1,8 +1,7 @@
 """
-This settings file is for production, it will automatically be used
-when you are in production environment.
+This settings file is for local development, it will automatically be used
+when you are in your local environment.
 """
-
 
 import os
 from pathlib import Path
@@ -14,18 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-
-# SECURITY WARNING: make sure to change this in your railway variables from the default one
-SECRET_KEY = os.environ["SECRET_KEY"]
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = "django-insecure-3l(vm@zmjb5rp)pcs@f4ht_73ex3k45h(8xq_c(_)9ww$old8s"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["https://pharmacy-api-production.up.railway.app"]
-
-
-# Comment out the following line and place your railway URL, and your production URL in the array.
-# CSRF_TRUSTED_ORIGINS = ["*"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -77,14 +71,22 @@ WSGI_APPLICATION = "main.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ["PGDATABASE"],
-        "USER": os.environ["PGUSER"],
-        "PASSWORD": os.environ["PGPASSWORD"],
-        "HOST": os.environ["PGHOST"],
-        "PORT": os.environ["PGPORT"],
+        # "DATABSE_URL":"postgresql://postgres:Z0HJGEJluNGmQrUtHBsO@containers-us-west-86.railway.app:6993/railway",
+        "NAME": "railway",
+        "USER": "postgres",
+        "PASSWORD": "Z0HJGEJluNGmQrUtHBsO",
+        "HOST": "containers-us-west-86.railway.app",
+        "PORT": "6993",
     }
 }
 
@@ -118,12 +120,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
-
-
-CORS_ALLOWED_ORIGINS = [
-    "https://pharmacy-api-production.up.railway.app",
-]
 
 
 # Static files (CSS, JavaScript, Images)
