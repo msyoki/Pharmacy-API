@@ -22,11 +22,11 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["pharmacy-api-production.up.railway.app"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Comment out the following line and place your railway URL, and your production URL in the array.
-CSRF_TRUSTED_ORIGINS = ["pharmacy-api-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = ["*"]
 
 
 # Application definition
