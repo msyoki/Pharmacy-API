@@ -81,20 +81,14 @@ WSGI_APPLICATION = "main.wsgi.application"
 
 DATABASES = {
     "default": {
-       dj_database_url.parse(os.environ.get('DATABASE_URL'))
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": os.environ["PGDATABASE"],
+        "USER": os.environ["PGUSER"],
+        "PASSWORD": os.environ["PGPASSWORD"],
+        "HOST": os.environ["PGHOST"],
+        "PORT": os.environ["PGPORT"],
     }
 }
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql_psycopg2",
-#         "NAME": os.environ["PGDATABASE"],
-#         "USER": os.environ["PGUSER"],
-#         "PASSWORD": os.environ["PGPASSWORD"],
-#         "HOST": os.environ["PGHOST"],
-#         "PORT": os.environ["PGPORT"],
-#     }
-# }
 
 
 # Password validation
