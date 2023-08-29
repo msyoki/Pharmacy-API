@@ -6,6 +6,7 @@ when you are in production environment.
 
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,16 +78,23 @@ WSGI_APPLICATION = "main.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ["PGDATABASE"],
-        "USER": os.environ["PGUSER"],
-        "PASSWORD": os.environ["PGPASSWORD"],
-        "HOST": os.environ["PGHOST"],
-        "PORT": os.environ["PGPORT"],
+       dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": os.environ["PGDATABASE"],
+#         "USER": os.environ["PGUSER"],
+#         "PASSWORD": os.environ["PGPASSWORD"],
+#         "HOST": os.environ["PGHOST"],
+#         "PORT": os.environ["PGPORT"],
+#     }
+# }
 
 
 # Password validation
