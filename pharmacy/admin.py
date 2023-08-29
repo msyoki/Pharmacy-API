@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, CreditSale,CashSale,Supplier
+from .models import Product, CreditSale,CashSale,Supplier, Category,SubCategory
 
 # Register your models here.
 
@@ -17,10 +17,13 @@ class SupplierAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'quantity', 'price', 'display_suppliers')
-    list_filter = ('suppliers',)
+    list_display = ('name', 'description', 'quantity', 'price')
+ 
+@admin.register(Category)
+class SubCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id','name')
 
-    def display_suppliers(self, obj):
-        return ", ".join([supplier.name for supplier in obj.suppliers.all()])
-
-    display_suppliers.short_description = 'Suppliers'
+@admin.register(SubCategory)
+class SubCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id','name', 'category')
+   
