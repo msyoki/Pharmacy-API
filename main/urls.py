@@ -16,13 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from pharmacy.views import ProductViewSet, SaleViewSet, DebtViewSet, CreditViewSet
+from pharmacy.views import ProductViewSet, CreditSaleViewSet, CashSaleViewSet,SupplierViewSet
 
 router = DefaultRouter()
+
+router.register(r'suppliers',SupplierViewSet)
 router.register(r'products', ProductViewSet)
-router.register(r'sales', SaleViewSet)
-router.register(r'debts', DebtViewSet)
-router.register(r'credits', CreditViewSet)
+router.register(r'cashsales', CreditSaleViewSet)
+router.register(r'credits', CashSaleViewSet)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),

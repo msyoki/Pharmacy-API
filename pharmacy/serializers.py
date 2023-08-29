@@ -1,22 +1,27 @@
 from rest_framework import serializers
-from .models import Product, Sale, Debt, Credit
+from .models import Product, CreditSale,CashSale,Supplier
+
+
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supplier
+        fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
+    suppliers = SupplierSerializer(many=True)  # Many-to-many relationship
+
     class Meta:
         model = Product
         fields = '__all__'
 
-class SaleSerializer(serializers.ModelSerializer):
+
+class CreditSaleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Sale
+        model = CreditSale
         fields = '__all__'
 
-class DebtSerializer(serializers.ModelSerializer):
+class CashSaleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Debt
+        model = CashSale
         fields = '__all__'
 
-class CreditSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Credit
-        fields = '__all__'
