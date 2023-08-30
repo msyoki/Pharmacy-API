@@ -17,7 +17,7 @@ class SupplierAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'quantity', 'price')
+    list_display = ('name', 'description', 'quantity', 'price','category','subcategory')
  
 @admin.register(Category)
 class SubCategoryAdmin(admin.ModelAdmin):
