@@ -22,10 +22,18 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING)
     subcategory = models.ForeignKey(SubCategory, on_delete=models.DO_NOTHING)
 
+    def save(self, *args, **kwargs):
+        is_new_product = self.pk is None  # Check if it's a new product
+        super().save(*args, **kwargs)
+        
+        # Create a StockAlert instance only for new products
+        if is_new_product:
+            StockAlert.objects.create(product=self)
+
 class StockAlert(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     threshold = models.PositiveIntegerField(default=5)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     def check_and_alert(self):
         if self.is_active and self.product.quantity <= self.threshold:
