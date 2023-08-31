@@ -85,9 +85,9 @@ DATABASES = {
         # "DATABSE_URL":"postgresql://postgres:Z0HJGEJluNGmQrUtHBsO@containers-us-west-86.railway.app:6993/railway",
         "NAME": "railway",
         "USER": "postgres",
-        "PASSWORD": "uendCUus9rtajG9KoxPr",
-        "HOST": "containers-us-west-89.railway.app",
-        "PORT": "5866",
+        "PASSWORD": "FfTA9mBbhS84xLN3HbqU",
+        "HOST": "containers-us-west-197.railway.app",
+        "PORT": "7963",
     }
 }
 
