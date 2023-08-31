@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, CreditSale,CashSale,Supplier,Category,SubCategory
+from .models import Product,Sale,Supplier,Category,SubCategory
 
 
 class SupplierSerializer(serializers.ModelSerializer):
@@ -22,13 +22,9 @@ class SubCategorySerializer(serializers.ModelSerializer):
         model = SubCategory
         fields = '__all__'
 
-class CreditSaleSerializer(serializers.ModelSerializer):
+class SaleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CreditSale
+        model = Sale
         fields = '__all__'
 
-class CashSaleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CashSale
-        fields = '__all__'
 

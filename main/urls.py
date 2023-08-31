@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from pharmacy.views import ProductViewSet,CategoryViewSet,SubCategoryViewSet,CreditSaleViewSet, CashSaleViewSet,SupplierViewSet
+from pharmacy.views import ProductViewSet,SaleViewSet,CategoryViewSet,SubCategoryViewSet,SupplierViewSet
 
 router = DefaultRouter()
 
@@ -24,8 +24,8 @@ router.register(r'suppliers',SupplierViewSet)
 router.register(r'categories', CategoryViewSet)
 router.register(r'subcategories', SubCategoryViewSet)
 router.register(r'products', ProductViewSet)
-router.register(r'cashsales', CreditSaleViewSet)
-router.register(r'credits', CashSaleViewSet)
+router.register(r'sales', SaleViewSet)
+
 
 
 urlpatterns = [

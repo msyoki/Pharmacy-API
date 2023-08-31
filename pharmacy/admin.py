@@ -1,15 +1,12 @@
 from django.contrib import admin
-from .models import Product, CreditSale,CashSale,Supplier, Category,SubCategory
+from .models import Product, Sale,Supplier, Category,SubCategory
 
 # Register your models here.
 
-@admin.register(CreditSale)
-class CreditSaleAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'product', 'quantity_sold', 'sale_amount', 'sale_date')
+@admin.register(Sale)
+class SaleAdmin(admin.ModelAdmin):
+    list_display = ('product', 'quantity', 'total_amount','is_credit_sale')
 
-@admin.register(CashSale)
-class CashSaleAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'product', 'quantity_sold', 'sale_amount', 'sale_date')
 
 @admin.register(Supplier)
 class SupplierAdmin(admin.ModelAdmin):

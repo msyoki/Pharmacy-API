@@ -1,7 +1,7 @@
 from rest_framework import viewsets,status
 from rest_framework.response import Response
-from .models import Product,Supplier, CreditSale,CashSale,Category,SubCategory
-from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, CreditSaleSerializer, CashSaleSerializer
+from .models import Product,Supplier, Sale,Category,SubCategory
+from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer
 
 
 class SupplierViewSet(viewsets.ModelViewSet):
@@ -39,10 +39,6 @@ class ProductViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-class CreditSaleViewSet(viewsets.ModelViewSet):
-    queryset = CreditSale.objects.all()
-    serializer_class = CreditSaleSerializer
-
-class CashSaleViewSet(viewsets.ModelViewSet):
-    queryset = CashSale.objects.all()
-    serializer_class = CashSaleSerializer
+class SaleViewSet(viewsets.ModelViewSet):
+    queryset = Sale.objects.all()
+    serializer_class = SaleSerializer
