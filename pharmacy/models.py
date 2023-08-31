@@ -63,7 +63,7 @@ class Sale(models.Model):
             self.product.save()
 
             # Get the StockAlert for the product
-            stock_alert = StockAlert.objects.get(product=self.product)
+            stock_alert = StockAlert.objects.get(product=self)
 
             # Check and update the StockAlert
             if self.product.quantity <= stock_alert.threshold:
