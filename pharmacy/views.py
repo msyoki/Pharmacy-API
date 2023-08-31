@@ -1,6 +1,6 @@
 from rest_framework import viewsets,status
 from rest_framework.response import Response
-from .models import Product,Supplier, Sale,Category,SubCategory
+from .models import Product,Supplier, Sale,Category,SubCategory,StockAlert
 from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer
 
 
@@ -38,6 +38,34 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        # Get the original quantity before updating
+        original_quantity = instance.quantity
+
+        self.perform_update(serializer)
+
+        # Get the updated quantity after updating
+        updated_quantity = serializer.validated_data.get('quantity')
+
+        # Get the stockalert instance
+        stock_alert= StockAlert.objects.get(product=instance)
+
+        # Check if the quantity has changed and take action if needed
+        if updated_quantity > stock_alert.threshold:
+            # Perform your actions here, e.g., trigger alerts, update stock, etc.
+            stock_alert.is_active = False
+            stock_alert.save()
+
+           
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
 
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all()
