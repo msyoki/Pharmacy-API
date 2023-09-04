@@ -13,12 +13,14 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(username=username, email=email)
         user.set_password(password)
+        user.is_staff = False
         user.save(using=self._db)
         return user
 
     def create_superuser(self, username, email, password=None):
         user = self.create_user(username, email, password)
         user.is_admin = True
+        user.is_staff = True 
         user.is_superuser = True
         user.save(using=self._db)
         return user
@@ -26,6 +28,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=30, unique=True)
     email = models.EmailField(unique=True)
+    is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     groups = models.ManyToManyField(Group, verbose_name='groups', blank=True, related_name='custom_users')

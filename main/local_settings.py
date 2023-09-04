@@ -80,7 +80,7 @@ REST_FRAMEWORK = {
 }
 
 # settings.py
-AUTH_USER_MODEL = 'customuser.CustomUser'  # Replace 'customuser' with the actual app name if different
+AUTH_USER_MODEL = 'pharmacy.CustomUser'  # Replace 'customuser' with the actual app name if different
 
 
 SIMPLE_JWT = {
@@ -109,9 +109,9 @@ DATABASES = {
         # "DATABSE_URL":"postgresql://postgres:Z0HJGEJluNGmQrUtHBsO@containers-us-west-86.railway.app:6993/railway",
         "NAME": "railway",
         "USER": "postgres",
-        "PASSWORD": "FfTA9mBbhS84xLN3HbqU",
-        "HOST": "containers-us-west-197.railway.app",
-        "PORT": "7963",
+        "PASSWORD": "DqNjktBfPqqKBT9zwBku",
+        "HOST": "containers-us-west-192.railway.app",
+        "PORT": "6076",
     }
 }
 

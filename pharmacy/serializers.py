@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from .models import Product,Sale,Supplier,Category,SubCategory
-from django.contrib.auth.models import User
-
+from django.contrib.auth import get_user_model
 # api/serializers.py
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+CustomUser = get_user_model()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -18,10 +19,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return token
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'is_admin')
+        model = CustomUser
+        fields = ('id', 'email', 'password', 'is_active', 'is_admin','is_staff')
+        extra_kwargs = {'password': {'write_only': True}}  # Hide password field in response
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = CustomUser(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:

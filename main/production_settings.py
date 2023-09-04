@@ -78,6 +78,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "main.wsgi.application"
 
 
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -86,6 +87,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
+AUTH_USER_MODEL = 'pharmacy.CustomUser'  # Replace 'customuser' with the actual app name if different
 
 
 SIMPLE_JWT = {

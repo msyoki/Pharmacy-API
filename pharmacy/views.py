@@ -2,16 +2,16 @@
 from rest_framework import viewsets,status,permissions
 from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenObtainPairView
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from .models import Product,Supplier, Sale,Category,SubCategory,StockAlert
 from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer
 
-
+CustomUser = get_user_model()
 # api/views.py
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -28,7 +28,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         if not username or not password or not email:
             return Response({'error': 'Please provide username, password, and email.'}, status=status.HTTP_400_BAD_REQUEST)
         
-        user, created = User.objects.get_or_create(username=username, email=email)
+        user, created = CustomUser.objects.get_or_create(username=username, email=email)
         if created:
             user.set_password(password)
             user.is_admin = is_admin  # Set the is_admin field

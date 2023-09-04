@@ -1,7 +1,11 @@
 from django.contrib import admin
-from .models import Product, Sale,Supplier, Category,SubCategory,StockAlert
+from .models import CustomUser,Product, Sale,Supplier, Category,SubCategory,StockAlert
 
 # Register your models here.
+
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ('id','email', 'username', 'is_staff','is_admin','is_superuser')
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
