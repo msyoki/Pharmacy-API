@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from pharmacy.views import ProductViewSet,SaleViewSet,CategoryViewSet,SubCategoryViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
+from pharmacy.views import register_user,UserUpdateView,ProductViewSet,SaleViewSet,CategoryViewSet,SubCategoryViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
 
 router = DefaultRouter()
 
@@ -28,8 +28,11 @@ router.register(r'sales', SaleViewSet)
 router.register(r'users', UserViewSet)
 
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/', include(router.urls)),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/user/update/', UserUpdateView.as_view(), name='user-update'),
+    path('api/register/', register_user, name='register_user'),
 ]

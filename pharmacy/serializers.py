@@ -13,7 +13,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims to the token payload
         token['email'] = user.email
-        token['username'] = user.username
+        token['first_name'] = user.username
+        token['last_name'] = user.username
         token['is_active'] = user.is_active
         token['is_admin'] = user.is_admin
 
@@ -23,15 +24,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'password', 'is_active', 'is_admin','is_staff')
+        fields = ('id', 'email','first_name','last_name', 'password', 'is_active', 'is_admin','is_staff')
         extra_kwargs = {'password': {'write_only': True}}  # Hide password field in response
 
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = CustomUser(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
+class UserUpdateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)  # Include password field
+
+    class Meta:
+        model = CustomUser
+        fields = ('first_name','last_name','password')  # Add fields to be updated
+
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,41 +1,64 @@
 
 from rest_framework import viewsets,status,permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import api_view
+from rest_framework.generics import UpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from .models import Product,Supplier, Sale,Category,SubCategory,StockAlert
-from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer
+from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
 
 CustomUser = get_user_model()
-# api/views.py
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
+    http_method_names = ['get']
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer  # Use the custom serializer
 
-    @action(methods=['POST'], detail=False)
-    def register(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email')
-        is_admin = request.data.get('is_admin',False)
-        
-        if not username or not password or not email:
-            return Response({'error': 'Please provide username, password, and email.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user, created = CustomUser.objects.get_or_create(username=username, email=email)
-        if created:
-            user.set_password(password)
-            user.is_admin = is_admin  # Set the is_admin field
-            user.save()
-            return super().post(request)
-        else:
-            return Response({'error': 'Username or email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    email = request.data.get('email')
+    is_admin = request.data.get('is_admin', False)
+
+    if not username or not password or not email:
+        return Response({'error': 'Please provide username, password, and email.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user, created = CustomUser.objects.get_or_create(username=username, email=email)
+    if created:
+        user.set_password(password)
+        user.is_admin = is_admin  # Set the is_admin field
+        user.save()
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'error': 'Username or email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserUpdateView(UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # Get the user making the request
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        # Allow partial updates (including password)
+        instance = self.get_object()
+        partial = kwargs.pop('partial', True)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
 
 class SupplierViewSet(viewsets.ModelViewSet):

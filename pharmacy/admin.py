@@ -5,7 +5,7 @@ from .models import CustomUser,Product, Sale,Supplier, Category,SubCategory,Stoc
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('id','email', 'username', 'is_staff','is_admin','is_superuser')
+    list_display = ('id','email', 'first_name','last_name', 'is_staff','is_admin','is_superuser')
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
