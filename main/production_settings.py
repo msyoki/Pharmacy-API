@@ -6,6 +6,7 @@ when you are in production environment.
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    'rest_framework_simplejwt',
     "corsheaders",
     "pharmacy",
 ]
@@ -76,6 +78,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "main.wsgi.application"
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Token expiration time
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # Refresh token expiration time
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=30),  # Lifetime of the refresh token
+    'SLIDING_TOKEN_REFRESH_ON_ACCESS': True,
+    'SLIDING_TOKEN_REFRESH_ON_LOGIN': True,
+    'SLIDING_TOKEN_REFRESH_ON_PASSWORD_CHANGE': True,
+    'SLIDING_TOKEN_REFRESH_AFTER_INACTIVITY': timedelta(days=14),  # Refresh token inactivity expiration time
+}
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 

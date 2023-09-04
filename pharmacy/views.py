@@ -1,7 +1,41 @@
-from rest_framework import viewsets,status
+
+from rest_framework import viewsets,status,permissions
+from rest_framework.decorators import action
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from .models import Product,Supplier, Sale,Category,SubCategory,StockAlert
-from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer
+from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer
+
+
+# api/views.py
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer  # Use the custom serializer
+
+    @action(methods=['POST'], detail=False)
+    def register(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        email = request.data.get('email')
+        is_admin = request.data.get('is_admin',False)
+        
+        if not username or not password or not email:
+            return Response({'error': 'Please provide username, password, and email.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user, created = User.objects.get_or_create(username=username, email=email)
+        if created:
+            user.set_password(password)
+            user.is_admin = is_admin  # Set the is_admin field
+            user.save()
+            return super().post(request)
+        else:
+            return Response({'error': 'Username or email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SupplierViewSet(viewsets.ModelViewSet):
