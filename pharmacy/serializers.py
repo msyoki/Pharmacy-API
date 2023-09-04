@@ -13,8 +13,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims to the token payload
         token['email'] = user.email
-        token['first_name'] = user.username
-        token['last_name'] = user.username
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
         token['is_active'] = user.is_active
         token['is_admin'] = user.is_admin
 
