@@ -61,8 +61,9 @@ class SubCategory(models.Model):
  
 class Product(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    description = models.TextField()
     quantity = models.PositiveIntegerField()
+    expirydate = models.DateField()
+    receivedby = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING)
     subcategory = models.ForeignKey(SubCategory, on_delete=models.DO_NOTHING)

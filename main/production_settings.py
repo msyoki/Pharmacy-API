@@ -93,6 +93,7 @@ AUTH_USER_MODEL = 'pharmacy.CustomUser'  # Replace 'customuser' with the actual 
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Token expiration time
+    'ROTATE_REFRESH_TOKENS': True,
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # Refresh token expiration time
     'SLIDING_TOKEN_LIFETIME': timedelta(days=30),  # Lifetime of the refresh token
     'SLIDING_TOKEN_REFRESH_ON_ACCESS': True,

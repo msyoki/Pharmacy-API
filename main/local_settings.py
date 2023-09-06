@@ -21,7 +21,9 @@ SECRET_KEY = "django-insecure-3l(vm@zmjb5rp)pcs@f4ht_73ex3k45h(8xq_c(_)9ww$old8s
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
+CORS_ALLOWED_ORIGINS = [
+   "http://localhost:3000"
+]
 
 # Application definition
 
@@ -85,6 +87,7 @@ AUTH_USER_MODEL = 'pharmacy.CustomUser'  # Replace 'customuser' with the actual 
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Token expiration time
+    'ROTATE_REFRESH_TOKENS': True,
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # Refresh token expiration time
     'SLIDING_TOKEN_LIFETIME': timedelta(days=30),  # Lifetime of the refresh token
     'SLIDING_TOKEN_REFRESH_ON_ACCESS': True,
