@@ -7,17 +7,17 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email,first_name,last_name, password=None):
-        if not email:
-            raise ValueError('The Email field must be set')
+    def create_user(self,username,email,first_name,last_name, password=None):
+        if not username:
+            raise ValueError('The Username field must be set')
         email = self.normalize_email(email)
-        user = self.model(email=email,first_name=first_name,last_name=last_name)
+        user = self.model(username=username,email=email,first_name=first_name,last_name=last_name)
         user.set_password(password)
         user.is_staff = False
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email,first_name,last_name, password=None):
+    def create_superuser(self,username,email,first_name,last_name, password=None):
         user = self.create_user(username,email,first_name,last_name,password)
         user.is_admin = True
         user.is_staff = True 
@@ -38,11 +38,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email','first_name','last_name']
 
     def __str__(self):
-        return self.email
+        return self.username
 
 
 
@@ -64,7 +64,9 @@ class Product(models.Model):
     quantity = models.PositiveIntegerField()
     expirydate = models.DateField()
     receivedby = models.CharField(max_length=100)
+    captured = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING)
     subcategory = models.ForeignKey(SubCategory, on_delete=models.DO_NOTHING)
 
@@ -91,29 +93,41 @@ class StockAlert(models.Model):
         super().save(*args, **kwargs)
         self.check_and_alert()
 
- 
-
 class Sale(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    is_credit_sale = models.BooleanField(default=False)
+    user = models.ForeignKey(CustomUser,on_delete=models.DO_NOTHING)
+    customer = models.CharField(max_length=100,blank=True)
+    customer_number = models.CharField(max_length=100,blank=True)
+    customer_location = models.CharField(max_length=100,blank=True)
+
+
+
+
+class SaleItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True)
-    is_credit_sale = models.BooleanField(default=False)
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        if not self.total_amount:
-            self.total_amount = self.product.price * self.quantity
+        # Get the product original quantity and update it based on the sale item quantity
+        original_quantity = self.product.quantity
+        self.product.quantity = original_quantity - self.quantity
+        self.product.save()
 
-        # Reduce the product quantity when a sale is created
-        if self.pk is None:  # This checks if it's a new sale
-            self.product.quantity -= self.quantity
-            self.product.save()
+        # Update the stock alert
+        stock_alert = StockAlert.objects.get(product=self.product)
 
-            # Get the StockAlert for the product
-            stock_alert = StockAlert.objects.get(product=self.product)
+        # Check if the quantity is below or equal to the threshold and take action if needed
+        if self.product.quantity <= stock_alert.threshold and not stock_alert.is_active:
+            # Perform your actions here, e.g., trigger alerts, update stock, etc.
+            stock_alert.is_active = True
+            stock_alert.save()
+        elif self.product.quantity > stock_alert.threshold and stock_alert.is_active:
+            # Perform your actions here, e.g., trigger alerts, update stock, etc.
+            stock_alert.is_active = False
+            stock_alert.save()
 
-            # Check and update the StockAlert
-            if self.product.quantity <= stock_alert.threshold:
-                stock_alert.is_active = True
-                stock_alert.save()
-
-        super().save(*args, **kwargs)
+        super(SaleItem, self).save(*args, **kwargs)

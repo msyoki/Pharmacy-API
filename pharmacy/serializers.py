@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product,Sale,Supplier,Category,SubCategory
+from .models import Product,SaleItem,Sale,Supplier,Category,SubCategory
 from django.contrib.auth import get_user_model
 # api/serializers.py
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -12,6 +12,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
 
         # Add custom claims to the token payload
+        token['username'] = user.username
         token['email'] = user.email
         token['first_name'] = user.first_name
         token['last_name'] = user.last_name
@@ -24,9 +25,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'email','first_name','last_name', 'password', 'is_active', 'is_admin','is_staff')
-        extra_kwargs = {'password': {'write_only': True}}  # Hide password field in response
-
+        fields = ('id','username','email','first_name','last_name','is_active', 'is_admin','is_staff')
+    
 class UserUpdateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)  # Include password field
 
@@ -55,9 +55,15 @@ class SubCategorySerializer(serializers.ModelSerializer):
         model = SubCategory
         fields = '__all__'
 
+class SaleItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SaleItem
+        fields = ('product', 'quantity')
+
 class SaleSerializer(serializers.ModelSerializer):
+    sale_items = SaleItemSerializer(many=True, read_only=True)
+
     class Meta:
         model = Sale
         fields = '__all__'
-
 

@@ -6,8 +6,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from .models import Product,Supplier, Sale,Category,SubCategory,StockAlert
-from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer, SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
+from .models import Product,Supplier,SaleItem, Sale,Category,SubCategory,StockAlert
+from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
+
+
+from django.db.models import Sum
+from django.db.models.functions import TruncDate
+from datetime import datetime
 
 CustomUser = get_user_model()
 
@@ -15,7 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
-    http_method_names = ['get']
+    # http_method_names = ['get']
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer  # Use the custom serializer
@@ -43,6 +48,22 @@ def register_user(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response({'error': 'Username or email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def category_subcategories(request,pk):
+    subcategories = SubCategory.objects.filter(category=pk)
+    category={}
+    subcategory_list=[]
+    for i in subcategories:
+        response ={
+            "id":i.id,
+            "name":i.name
+        }
+        subcategory_list.append(response)
+    return  Response(subcategory_list,status= status.HTTP_200_OK)
 
 
 class UserUpdateView(UpdateAPIView):
@@ -87,50 +108,76 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
 
-    def create(self, request, *args, **kwargs):
-        product_name = request.data.get('name')
+class SaleViewSet(viewsets.ModelViewSet):
+    queryset = Sale.objects.all().order_by('-created') 
+    serializer_class = SaleSerializer
+    permission_classes = [permissions.AllowAny]
 
-        if Product.objects.filter(name=product_name).exists():
-            return Response(
-                {"error": "A product with this name already exists."},
-                status=status.HTTP_400_BAD_REQUEST
+    def create(self, request, *args, **kwargs):
+        # Serialize the Sale data
+        sale_serializer = self.get_serializer(data=request.data)
+        sale_serializer.is_valid(raise_exception=True)
+
+        # Serialize the SaleItem data
+        sale_items_data = request.data.get('sale_items', [])
+        sale_items_serializer = SaleItemSerializer(data=sale_items_data, many=True)
+        sale_items_serializer.is_valid(raise_exception=True)
+
+        # Calculate total_amount based on SaleItem prices
+        total_amount = 0
+        for item_data in sale_items_data:
+            product_id = item_data['product']
+            quantity = item_data['quantity']
+            product = Product.objects.get(pk=product_id)
+            total_amount += product.price * quantity
+
+        # Set total_amount in validated_data
+        sale_serializer.validated_data['total_amount'] = total_amount
+
+        # If it's a credit sale, set paid_amount to the posted value (if provided)
+        # Otherwise, set it to total_amount
+        if sale_serializer.validated_data['is_credit_sale']:
+            paid_amount = request.data.get('paid_amount', total_amount)
+        else:
+            paid_amount = total_amount
+
+        sale_serializer.validated_data['paid_amount'] = paid_amount
+
+        # Save the Sale instance
+        sale = sale_serializer.save()
+
+        # Save the SaleItem instances with a reference to the Sale
+        for item_data in sale_items_data:
+            SaleItem.objects.create(
+                product_id=item_data['product'],
+                quantity=item_data['quantity'],
+                sale=sale
             )
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        headers = self.get_success_headers(sale_serializer.data)
+        return Response(sale_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_daily_sales_total(request):
+    # Get today's date
+    today = datetime.now().date()
 
+    # Query the database to calculate daily sales totals
+    daily_sales = Sale.objects.filter(
+        created__date=today
+    ).annotate(
+        date=TruncDate('created')
+    ).values(
+        'date'
+    ).annotate(
+        total=Sum('total_amount')
+    ).order_by(
+        'date'
+    )
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
+    # Format the results into the desired list format
+    results = [{'date': sale['date'], 'total': sale['total']} for sale in daily_sales]
 
-        # Get the original quantity before updating
-        original_quantity = instance.quantity
-
-        self.perform_update(serializer)
-
-        # Get the updated quantity after updating
-        updated_quantity = serializer.validated_data.get('quantity')
-
-        # Get the stockalert instance
-        stock_alert= StockAlert.objects.get(product=instance)
-
-        # Check if the quantity has changed and take action if needed
-        if updated_quantity > stock_alert.threshold:
-            # Perform your actions here, e.g., trigger alerts, update stock, etc.
-            stock_alert.is_active = False
-            stock_alert.save()
-
-           
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
-
-
-class SaleViewSet(viewsets.ModelViewSet):
-    queryset = Sale.objects.all()
-    serializer_class = SaleSerializer
+    return Response(results, status=status.HTTP_200_OK)

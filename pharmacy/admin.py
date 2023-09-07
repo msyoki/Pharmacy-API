@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser,Product, Sale,Supplier, Category,SubCategory,StockAlert
+from .models import CustomUser,Product,SaleItem, Sale,Supplier, Category,SubCategory,StockAlert
 
 # Register your models here.
 
@@ -9,7 +9,12 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
-    list_display = ('product', 'quantity', 'total_amount','is_credit_sale')
+    list_display = ('id','created','user')
+
+@admin.register(SaleItem)
+class SaleItemAdmin(admin.ModelAdmin):
+    list_display = ('product', 'quantity','sale')
+
 
 @admin.register(Supplier)
 class SupplierAdmin(admin.ModelAdmin):
@@ -17,7 +22,7 @@ class SupplierAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'quantity', 'price','category','subcategory')
+    list_display = ('name', 'quantity', 'price','category','subcategory')
 
 
 @admin.register(StockAlert)
