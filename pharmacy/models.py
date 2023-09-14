@@ -104,6 +104,11 @@ class Stock(models.Model):
 
         super(Stock, self).save(*args, **kwargs)
 
+    @property
+    def getProductName(self):
+        product = Product.objects.get(pk=self.product.id)
+        return product.name
+
 
 class StockAlert(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)

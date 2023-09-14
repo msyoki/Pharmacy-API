@@ -203,3 +203,28 @@ def calculate_total_sales(request):
     # Return the result as JSON response
     response_data = {'total': total_sales}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def all_captured_stock(request):
+    stock = Stock.objects.all()
+    response_data=[]
+    for i in stock:
+        stockitem = {'id':i.id,'quantity': i.quantity, 'receivedby':i.receivedby, 'captured':i.captured, 'product':i.getProductName}
+        response_data.append(stockitem)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def credit_sales_summary(request):
+    credit_sales = Sale.objects.filter(is_credit_sale=True)
+    response_data=[]
+    for i in credit_sales:
+        if i.paid_amount != i.total_amount:
+            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':i.created,'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.customer, 'customer_number':i.customer_number,'customer_location':i.customer_location}
+            response_data.append(sale)
+    return Response(response_data, status=status.HTTP_200_OK)
