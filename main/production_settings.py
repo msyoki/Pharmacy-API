@@ -24,6 +24,9 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
+CORS_ALLOWED_ORIGINS = [
+   "http://localhost:3000","https://pharmacyappdev.netlify.app"
+]
 
 
 # Comment out the following line and place your railway URL, and your production URL in the array.
