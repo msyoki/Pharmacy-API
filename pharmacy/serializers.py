@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product,SaleItem,Sale,Supplier,Category,SubCategory
+from .models import Product,SaleItem,Sale,Supplier,Stock
 from django.contrib.auth import get_user_model
 # api/serializers.py
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -45,15 +45,15 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
+# class CategorySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Category
+#         fields = '__all__'
 
-class SubCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubCategory
-        fields = '__all__'
+# class SubCategorySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = SubCategory
+#         fields = '__all__'
 
 class SaleItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -67,3 +67,7 @@ class SaleSerializer(serializers.ModelSerializer):
         model = Sale
         fields = '__all__'
 
+class StockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stock
+        fields = '__all__'

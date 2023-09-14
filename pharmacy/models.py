@@ -52,23 +52,22 @@ class Supplier(models.Model):
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=20)
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+# class Category(models.Model):
+#     name = models.CharField(max_length=100, unique=True)
 
-class SubCategory(models.Model):
-    name = models.CharField(max_length=100)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+# class SubCategory(models.Model):
+#     name = models.CharField(max_length=100)
+#     category = models.ForeignKey(Category, on_delete=models.CASCADE)
  
 class Product(models.Model):
     name = models.CharField(max_length=100, unique=True)
     quantity = models.PositiveIntegerField()
     expirydate = models.DateField()
-    receivedby = models.CharField(max_length=100)
     captured = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.ForeignKey(Category, on_delete=models.DO_NOTHING)
-    subcategory = models.ForeignKey(SubCategory, on_delete=models.DO_NOTHING)
+    # category = models.ForeignKey(Category, on_delete=models.DO_NOTHING)
+    # subcategory = models.ForeignKey(SubCategory, on_delete=models.DO_NOTHING)
 
     def save(self, *args, **kwargs):
         is_new_product = self.pk is None  # Check if it's a new product
@@ -77,6 +76,34 @@ class Product(models.Model):
         # Create a StockAlert instance only for new products
         if is_new_product:
             StockAlert.objects.create(product=self)
+
+class Stock(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    receivedby = models.CharField(max_length=100)
+    captured = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Get the product original quantity and update it based on the sale item quantity
+        original_quantity = self.product.quantity
+        self.product.quantity = original_quantity + self.quantity
+        self.product.save()
+
+        # Update the stock alert
+        stock_alert = StockAlert.objects.get(product=self.product)
+
+        # Check if the quantity is below or equal to the threshold and take action if needed
+        if self.product.quantity <= stock_alert.threshold and not stock_alert.is_active:
+            # Perform your actions here, e.g., trigger alerts, update stock, etc.
+            stock_alert.is_active = True
+            stock_alert.save()
+        elif self.product.quantity > stock_alert.threshold and stock_alert.is_active:
+            # Perform your actions here, e.g., trigger alerts, update stock, etc.
+            stock_alert.is_active = False
+            stock_alert.save()
+
+        super(Stock, self).save(*args, **kwargs)
+
 
 class StockAlert(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)

@@ -112,14 +112,14 @@ DATABASES = {
         # "DATABSE_URL":"postgresql://postgres:Z0HJGEJluNGmQrUtHBsO@containers-us-west-86.railway.app:6993/railway",
         "NAME": "railway",
         "USER": "postgres",
-        "PASSWORD": "lox3YVDxut3r9OBF3YJm",
-        "HOST": "containers-us-west-90.railway.app",
-        "PORT": "7581",
+        "PASSWORD": "D6SBGV36DNcOZLy1SxNQ",
+        "HOST": "containers-us-west-164.railway.app",
+        "PORT": "7405",
     }
 }
 
 
-# Password validation
+# Password validation7405
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [

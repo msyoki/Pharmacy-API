@@ -6,13 +6,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from .models import Product,Supplier,SaleItem, Sale,Category,SubCategory,StockAlert
-from .serializers import ProductSerializer,CategorySerializer,SubCategorySerializer,SupplierSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
+from .models import Product,Supplier,SaleItem, Sale,StockAlert,Stock
+from .serializers import ProductSerializer,SupplierSerializer,StockSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
 
 
 from django.db.models import Sum
 from django.db.models.functions import TruncDate
 from datetime import datetime
+from django.db import models
 
 CustomUser = get_user_model()
 
@@ -21,6 +22,11 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     # http_method_names = ['get']
+
+class StockViewSet(viewsets.ModelViewSet):
+    queryset = Stock.objects.all()
+    serializer_class = StockSerializer
+    permission_classes = [permissions.AllowAny]
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer  # Use the custom serializer
@@ -50,21 +56,6 @@ def register_user(request):
         return Response({'error': 'Username or email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-@authentication_classes([])  # Disable authentication for this view
-@permission_classes([])  # Disable permission checks for this view
-def category_subcategories(request,pk):
-    subcategories = SubCategory.objects.filter(category=pk)
-    category={}
-    subcategory_list=[]
-    for i in subcategories:
-        response ={
-            "id":i.id,
-            "name":i.name
-        }
-        subcategory_list.append(response)
-    return  Response(subcategory_list,status= status.HTTP_200_OK)
-
 
 class UserUpdateView(UpdateAPIView):
     queryset = CustomUser.objects.all()
@@ -88,18 +79,6 @@ class UserUpdateView(UpdateAPIView):
 class SupplierViewSet(viewsets.ModelViewSet):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class SubCategoryViewSet(viewsets.ModelViewSet):
-    queryset = SubCategory.objects.all()
-    serializer_class = SubCategorySerializer
     permission_classes = [permissions.AllowAny]
 
 
@@ -166,7 +145,7 @@ def calculate_daily_sales_total(request):
 
     # Query the database to calculate daily sales totals
     daily_sales = Sale.objects.filter(
-        created__date=today
+      
     ).annotate(
         date=TruncDate('created')
     ).values(
@@ -181,3 +160,46 @@ def calculate_daily_sales_total(request):
     results = [{'date': sale['date'], 'total': sale['total']} for sale in daily_sales]
 
     return Response(results, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_credit_sales_balance(request):
+    # Calculate the sum of total_amount - paid_amount for credit sales
+    credit_sales_balance = Sale.objects.filter(is_credit_sale=True).aggregate(
+        credit_sales_balance=Sum(models.F('total_amount') - models.F('paid_amount'))
+    )['credit_sales_balance'] or 0.00
+
+    # Return the result as JSON response
+    response_data = {'total': credit_sales_balance}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_total_non_credit_sales(request):
+    # Calculate the total of total_amount for non-credit sales
+    total_non_credit_sales = Sale.objects.all().aggregate(
+        total_non_credit_sales=Sum('paid_amount')
+    )['total_non_credit_sales'] or 0.00
+
+    # Return the result as JSON response
+    response_data = {'total': total_non_credit_sales}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_total_sales(request):
+    # Calculate the total of total_amount for non-credit sales
+    total_sales = Sale.objects.all().aggregate(
+        total_sales=Sum('total_amount')
+    )['total_sales'] or 0.00
+
+    # Return the result as JSON response
+    response_data = {'total': total_sales}
+    return Response(response_data, status=status.HTTP_200_OK)

@@ -17,15 +17,14 @@ from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from pharmacy.views import register_user,calculate_daily_sales_total,category_subcategories,UserUpdateView,ProductViewSet,SaleViewSet,CategoryViewSet,SubCategoryViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
+from pharmacy.views import StockViewSet,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
 
 router = DefaultRouter()
 
 router.register(r'suppliers',SupplierViewSet)
-router.register(r'categories', CategoryViewSet)
-router.register(r'subcategories', SubCategoryViewSet)
 router.register(r'products', ProductViewSet)
 router.register(r'sales', SaleViewSet) 
+router.register(r'stock', StockViewSet) 
 router.register(r'users', UserViewSet)
 
 
@@ -38,7 +37,9 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Add this line
     path('api/user/update/', UserUpdateView.as_view(), name='user-update'),
     path('api/register/', register_user, name='register_user'),
-    path('api/<int:pk>/subcategories/',category_subcategories, name='filtered_subcategories'),
-    path('api/report/',calculate_daily_sales_total, name='sale_report')
-    
+    path('api/report/',calculate_daily_sales_total, name='sale_report'),
+    path('api/allsales/',calculate_total_sales, name='sales_totals'),
+    path('api/cash/',calculate_total_non_credit_sales, name='cash_sales_totals'),
+    path('api/credit/',calculate_credit_sales_balance, name='cash_credit_totals')     
 ]
+calculate_total_sales
