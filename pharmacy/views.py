@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from .models import Product,Supplier,SaleItem, Sale,StockAlert,Stock
-from .serializers import ProductSerializer,SupplierSerializer,StockSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
+from .models import Product,Supplier,SaleItem, Sale,StockAlert,Stock,Patient
+from .serializers import ProductSerializer,PatientSerializer,SupplierSerializer,StockSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
 
 
 from django.db.models import Sum
@@ -26,6 +26,13 @@ class UserViewSet(viewsets.ModelViewSet):
 class StockViewSet(viewsets.ModelViewSet):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+
+class PatientViewSet(viewsets.ModelViewSet):
+    queryset = Patient.objects.all()
+    serializer_class = PatientSerializer
     permission_classes = [permissions.AllowAny]
 
 class CustomTokenObtainPairView(TokenObtainPairView):

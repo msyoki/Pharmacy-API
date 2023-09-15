@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from pharmacy.views import StockViewSet,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
+from pharmacy.views import StockViewSet,PatientViewSet,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
 
 router = DefaultRouter()
 
@@ -26,6 +26,7 @@ router.register(r'products', ProductViewSet)
 router.register(r'sales', SaleViewSet) 
 router.register(r'stock', StockViewSet) 
 router.register(r'users', UserViewSet)
+router.register(r'patients',PatientViewSet)
 
 
 

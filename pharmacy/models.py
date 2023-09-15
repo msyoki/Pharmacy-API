@@ -136,6 +136,13 @@ class Sale(models.Model):
     customer_location = models.CharField(max_length=100,blank=True)
 
 
+class Patient(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    gender = models.CharField(max_length=100)
+    birth_cerificate_or_id = models.CharField(max_length=100,unique=True)
+    dob = models.DateField()
+    address = models.CharField(max_length=100)
 
 
 class SaleItem(models.Model):

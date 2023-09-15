@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product,SaleItem,Sale,Supplier,Stock
+from .models import Product,SaleItem,Sale,Supplier,Stock,Patient
 from django.contrib.auth import get_user_model
 # api/serializers.py
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -70,4 +70,10 @@ class SaleSerializer(serializers.ModelSerializer):
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
+        fields = '__all__'
+
+
+class PatientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Patient
         fields = '__all__'
