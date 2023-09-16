@@ -13,7 +13,7 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(username=username,email=email,first_name=first_name,last_name=last_name)
         user.set_password(password)
-        user.is_staff = False
+        user.is_staff = True
         user.save(using=self._db)
         return user
 
