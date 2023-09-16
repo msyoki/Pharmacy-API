@@ -80,6 +80,7 @@ class Product(models.Model):
 class Stock(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     receivedby = models.CharField(max_length=100)
     captured = models.DateTimeField(auto_now_add=True)
 

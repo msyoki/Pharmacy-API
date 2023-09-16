@@ -49,6 +49,7 @@ def register_user(request):
     first_name = request.data.get('first_name')
     last_name = request.data.get('last_name')
     is_admin = request.data.get('is_admin', False)
+    
 
     if not username or not password or not email :
         return Response({'error': 'Please provide username, email and password.'}, status=status.HTTP_400_BAD_REQUEST)
