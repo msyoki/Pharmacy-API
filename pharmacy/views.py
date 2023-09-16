@@ -221,7 +221,7 @@ def all_captured_stock(request):
     stock = Stock.objects.all()
     response_data=[]
     for i in stock:
-        stockitem = {'id':i.id,'quantity': i.quantity, 'receivedby':i.receivedby, 'captured':i.captured, 'product':i.getProductName}
+        stockitem = {'id':i.id,'quantity': i.quantity, 'receivedby':i.receivedby, 'purchase_price':i.purchase_price,'captured':i.captured, 'product':i.getProductName,'product_id':i.product.id}
         response_data.append(stockitem)
     return Response(response_data, status=status.HTTP_200_OK)
 
