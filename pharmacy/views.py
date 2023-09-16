@@ -43,16 +43,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def register_user(request):
+    username = request.data.get('username')
     password = request.data.get('password')
     email = request.data.get('email')
     first_name = request.data.get('first_name')
     last_name = request.data.get('last_name')
     is_admin = request.data.get('is_admin', False)
 
-    if not password or not email:
-        return Response({'error': 'Please provide email and password.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not username or not password or not email :
+        return Response({'error': 'Please provide username, email and password.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user, created = CustomUser.objects.get_or_create(email=email,first_name=first_name,last_name=last_name)
+    user, created = CustomUser.objects.get_or_create(username=username,email=email,first_name=first_name,last_name=last_name)
     if created:
         user.set_password(password)
         user.is_admin = is_admin  # Set the is_admin field
