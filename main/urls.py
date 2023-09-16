@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from pharmacy.views import StockViewSet,PatientViewSet,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
+from pharmacy.views import StockViewSet,sale_summary,PatientViewSet,cash_sales_summary,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
 
 router = DefaultRouter()
 
@@ -43,5 +43,8 @@ urlpatterns = [
     path('api/cash/',calculate_total_non_credit_sales, name='cash_sales_totals'),
     path('api/credit/',calculate_credit_sales_balance, name='cash_credit_totals'),
     path('api/allstock/',all_captured_stock, name='all_captured_stock'),
-    path('api/cssummary/',credit_sales_summary, name='credit_sales_summary')          
+    path('api/cssummary/',credit_sales_summary, name='credit_sales_summary'),  
+    path('api/cassummary/',cash_sales_summary, name='cash_sales_summary'),
+    path('api/salesummary/<int:pk>/',sale_summary, name='sale_summary')
+
 ]

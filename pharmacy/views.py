@@ -14,6 +14,7 @@ from django.db.models import Sum
 from django.db.models.functions import TruncDate
 from datetime import datetime
 from django.db import models
+from django.contrib.humanize.templatetags.humanize import naturaltime
 
 CustomUser = get_user_model()
 
@@ -234,6 +235,34 @@ def credit_sales_summary(request):
     response_data=[]
     for i in credit_sales:
         if i.paid_amount != i.total_amount:
-            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':i.created,'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.customer, 'customer_number':i.customer_number,'customer_location':i.customer_location}
+            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.customer, 'customer_number':i.customer_number,'customer_location':i.customer_location}
             response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def cash_sales_summary(request):
+    cash_sales = Sale.objects.filter(is_credit_sale=False)
+    response_data=[]
+    for i in  cash_sales:
+        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount}
+        response_data.append(sale)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def sale_summary(request,pk):
+    sale = Sale.objects.get(pk=pk)
+    
+    response = {
+        'id':sale.id,
+        'created':naturaltime(sale.created),
+        'total_amount': sale.total_amount,
+        'saleItems':sale.getSaleItems
+    }
+    return Response(response, status=status.HTTP_200_OK)

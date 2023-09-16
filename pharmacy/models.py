@@ -136,6 +136,18 @@ class Sale(models.Model):
     customer_number = models.CharField(max_length=100,blank=True)
     customer_location = models.CharField(max_length=100,blank=True)
 
+    @property
+    def getSaleItems(self):
+        sales_items= SaleItem.objects.filter(sale=self)
+        response=[]
+        for i in sales_items:
+            saleItem={
+                'product':i.product.name,
+                'quantity':i.quantity
+            }
+            response.append(saleItem)
+        return response
+
 
 class Patient(models.Model):
     first_name = models.CharField(max_length=100)

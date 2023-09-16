@@ -3,6 +3,8 @@ from .models import Product,SaleItem,Sale,Supplier,Stock,Patient
 from django.contrib.auth import get_user_model
 # api/serializers.py
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.humanize.templatetags.humanize import naturaltime
+
 
 CustomUser = get_user_model()
 
