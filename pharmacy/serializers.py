@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product,SaleItem,Sale,Supplier,Stock,Patient
+from .models import Product,SaleItem,Sale,Supplier,Stock,Patient,LabRequest,PatientNotes
 from django.contrib.auth import get_user_model
 # api/serializers.py
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -46,16 +46,17 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+        
 
-# class CategorySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Category
-#         fields = '__all__'
+class LabRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LabRequest
+        fields = '__all__'
 
-# class SubCategorySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = SubCategory
-#         fields = '__all__'
+class PatientNotesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientNotes
+        fields = '__all__'
 
 class SaleItemSerializer(serializers.ModelSerializer):
     class Meta:

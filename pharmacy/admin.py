@@ -31,7 +31,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name','gender','birth_cerificate_or_id','dob','address')
+    list_display = ('first_name', 'last_name','phone','gender','dob','address')
 
 
 

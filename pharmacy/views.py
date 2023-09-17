@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from .models import Product,Supplier,SaleItem, Sale,StockAlert,Stock,Patient
-from .serializers import ProductSerializer,PatientSerializer,SupplierSerializer,StockSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
+from .models import Product,Supplier,SaleItem, Sale,StockAlert,Stock,Patient,LabRequest,PatientNotes
+from .serializers import ProductSerializer,LabRequestSerializer,PatientNotesSerializer,PatientSerializer,SupplierSerializer,StockSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
 
 
 from django.db.models import Sum
@@ -15,6 +15,7 @@ from django.db.models.functions import TruncDate
 from datetime import datetime
 from django.db import models
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.utils import timezone
 
 CustomUser = get_user_model()
 
@@ -24,12 +25,24 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
     # http_method_names = ['get']
 
+
+
 class StockViewSet(viewsets.ModelViewSet):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
     permission_classes = [permissions.AllowAny]
 
 
+
+class LabRequestViewSet(viewsets.ModelViewSet):
+    queryset = LabRequest.objects.all()
+    serializer_class = LabRequestSerializer
+    permission_classes = [permissions.AllowAny]
+
+class PatientNotesViewSet(viewsets.ModelViewSet):
+    queryset = PatientNotes.objects.all()
+    serializer_class = PatientNotesSerializer
+    permission_classes = [permissions.AllowAny]
 
 class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patient.objects.all()
@@ -92,10 +105,39 @@ class SupplierViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 
+
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+
+        # Retrieve the associated StockAlert instance for this product
+        try:
+            stock_alert = StockAlert.objects.get(product=instance)
+        except StockAlert.DoesNotExist:
+            # If no StockAlert exists for this product, create one with default values
+            stock_alert = StockAlert(product=instance)
+
+        # Check if the product quantity is equal, less, or above the threshold
+        if instance.quantity <= stock_alert.threshold:
+            stock_alert.is_active = True
+        else:
+            stock_alert.is_active = False
+
+        # Save the StockAlert instance
+        stock_alert.save()
+
+        # Your custom logic here
+        # For example, you can update the captured timestamp or perform other actions
+        # whenever a product is updated.
+
+        # For instance, updating the captured timestamp:
+        instance.captured = timezone.now()
+        instance.save()
+
 
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all().order_by('-created') 
@@ -265,4 +307,21 @@ def sale_summary(request,pk):
         'total_amount': sale.total_amount,
         'saleItems':sale.getSaleItems
     }
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def stock_alerts(request):
+    stock_alerts = StockAlert.objects.filter(is_active=True)
+    response=[]
+    for i in stock_alerts:
+        stockalert = {
+            'id':i.id,
+            'product':i.product.name,
+            'product_id':i.product.id,
+            'product_quantity':i.product.quantity,
+        }
+        response.append(stockalert)
     return Response(response, status=status.HTTP_200_OK)

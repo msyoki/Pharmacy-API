@@ -62,7 +62,7 @@ class Supplier(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100, unique=True)
     quantity = models.PositiveIntegerField()
-    expirydate = models.DateField()
+    # expirydate = models.DateField()
     captured = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -153,10 +153,22 @@ class Patient(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     gender = models.CharField(max_length=100)
-    birth_cerificate_or_id = models.CharField(max_length=100,unique=True)
-    dob = models.DateField()
+    phone = models.CharField(max_length=100,unique=True)
+    dob = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
 
+
+class PatientNotes(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    notes = models.CharField(max_length=300)
+    captured = models.DateTimeField(auto_now_add=True)
+
+
+class LabRequest(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    description = models.CharField(max_length=300)
+    billed_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    captured = models.DateTimeField(auto_now_add=True)
 
 class SaleItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
