@@ -156,14 +156,18 @@ class SaleViewSet(viewsets.ModelViewSet):
 
         # Calculate total_amount based on SaleItem prices
         total_amount = 0
-        for item_data in sale_items_data:
-            product_id = item_data['product']
-            quantity = item_data['quantity']
-            product = Product.objects.get(pk=product_id)
-            total_amount += product.price * quantity
+        if sale_serializer.validated_data['is_lab_bill']:
+            pass
+        else:
+            for item_data in sale_items_data:
+                product_id = item_data['product']
+                quantity = item_data['quantity']
+                print(quantity)
+                product = Product.objects.get(pk=product_id)
+                total_amount += product.price * quantity
 
-        # Set total_amount in validated_data
-        sale_serializer.validated_data['total_amount'] = total_amount
+            # Set total_amount in validated_data
+            sale_serializer.validated_data['total_amount'] = total_amount
 
         # If it's a credit sale, set paid_amount to the posted value (if provided)
         # Otherwise, set it to total_amount
@@ -178,12 +182,16 @@ class SaleViewSet(viewsets.ModelViewSet):
         sale = sale_serializer.save()
 
         # Save the SaleItem instances with a reference to the Sale
-        for item_data in sale_items_data:
-            SaleItem.objects.create(
-                product_id=item_data['product'],
-                quantity=item_data['quantity'],
-                sale=sale
-            )
+        if sale_serializer.validated_data['is_lab_bill']:\
+            pass
+        else:
+            for item_data in sale_items_data:
+                print(item_data['quantity'])
+                SaleItem.objects.create(
+                    product_id=item_data['product'],
+                    quantity=item_data['quantity'],
+                    sale=sale
+                )
 
         headers = self.get_success_headers(sale_serializer.data)
         return Response(sale_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -219,7 +227,7 @@ def calculate_daily_sales_total(request):
 @permission_classes([])  # Disable permission checks for this view
 def calculate_credit_sales_balance(request):
     # Calculate the sum of total_amount - paid_amount for credit sales
-    credit_sales_balance = Sale.objects.filter(is_credit_sale=True).aggregate(
+    credit_sales_balance = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False).aggregate(
         credit_sales_balance=Sum(models.F('total_amount') - models.F('paid_amount'))
     )['credit_sales_balance'] or 0.00
 
@@ -228,13 +236,40 @@ def calculate_credit_sales_balance(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_credit_sales_balance_lab(request):
+    # Calculate the sum of total_amount - paid_amount for credit sales
+    credit_sales_balance = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True).aggregate(
+        credit_sales_balance=Sum(models.F('total_amount') - models.F('paid_amount'))
+    )['credit_sales_balance'] or 0.00
+
+    # Return the result as JSON response
+    response_data = {'total': credit_sales_balance}
+    return Response(response_data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_non_credit_sales(request):
     # Calculate the total of total_amount for non-credit sales
-    total_non_credit_sales = Sale.objects.all().aggregate(
+    total_non_credit_sales = Sale.objects.filter(is_lab_bill=False).aggregate(
+        total_non_credit_sales=Sum('paid_amount')
+    )['total_non_credit_sales'] or 0.00
+
+    # Return the result as JSON response
+    response_data = {'total': total_non_credit_sales}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_total_non_credit_sales_lab(request):
+    # Calculate the total of total_amount for non-credit sales
+    total_non_credit_sales = Sale.objects.filter(is_lab_bill=True).aggregate(
         total_non_credit_sales=Sum('paid_amount')
     )['total_non_credit_sales'] or 0.00
 
@@ -248,13 +283,28 @@ def calculate_total_non_credit_sales(request):
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_sales(request):
     # Calculate the total of total_amount for non-credit sales
-    total_sales = Sale.objects.all().aggregate(
+    total_sales = Sale.objects.filter(is_lab_bill=False).aggregate(
         total_sales=Sum('total_amount')
     )['total_sales'] or 0.00
 
     # Return the result as JSON response
     response_data = {'total': total_sales}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_total_sale_lab(request):
+    # Calculate the total of total_amount for non-credit sales
+    total_sales = Sale.objects.filter(is_lab_bill=True).aggregate(
+        total_sales=Sum('total_amount')
+    )['total_sales'] or 0.00
+
+    # Return the result as JSON response
+    response_data = {'total': total_sales}
+    return Response(response_data, status=status.HTTP_200_OK)
+
 
 
 @api_view(['GET'])
@@ -273,27 +323,25 @@ def all_captured_stock(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def credit_sales_summary(request):
-    credit_sales = Sale.objects.filter(is_credit_sale=True)
+    credit_sales = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False)
     response_data=[]
     for i in credit_sales:
         if i.paid_amount != i.total_amount:
-            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.customer, 'customer_number':i.customer_number,'customer_location':i.customer_location}
+            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.customer, 'customer_number':i.customer_number,'customer_location':i.customer_location, 'staff':i.user.getFullName}
             response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
-
 
 
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def cash_sales_summary(request):
-    cash_sales = Sale.objects.filter(is_credit_sale=False)
+    cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=False)
     response_data=[]
     for i in  cash_sales:
-        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount}
+        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount, 'staff':i.user.getFullName}
         response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
-
 
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
@@ -305,7 +353,8 @@ def sale_summary(request,pk):
         'id':sale.id,
         'created':naturaltime(sale.created),
         'total_amount': sale.total_amount,
-        'saleItems':sale.getSaleItems
+        'saleItems':sale.getSaleItems,
+        'staff':sale.user.getFullName
     }
     return Response(response, status=status.HTTP_200_OK)
 

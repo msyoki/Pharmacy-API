@@ -41,6 +41,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email','first_name','last_name']
 
+
+    @property
+    def getFullName(self):
+        fullname = f'{self.first_name} {self.last_name}'
+        return fullname
+
     def __str__(self):
         return self.username
 
@@ -126,8 +132,20 @@ class StockAlert(models.Model):
         super().save(*args, **kwargs)
         self.check_and_alert()
 
+class Patient(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    gender = models.CharField(max_length=100)
+    phone = models.CharField(max_length=100,unique=True)
+    dob = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+
+
 class Sale(models.Model):
     created = models.DateTimeField(auto_now_add=True)
+    is_lab_bill = models.BooleanField(default=False)
+    lab_request_details = models.CharField(max_length=300,null=True)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True)
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True)
     is_credit_sale = models.BooleanField(default=False)
@@ -135,6 +153,7 @@ class Sale(models.Model):
     customer = models.CharField(max_length=100,blank=True)
     customer_number = models.CharField(max_length=100,blank=True)
     customer_location = models.CharField(max_length=100,blank=True)
+
 
     @property
     def getSaleItems(self):
@@ -149,13 +168,6 @@ class Sale(models.Model):
         return response
 
 
-class Patient(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    gender = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100,unique=True)
-    dob = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
 
 
 class PatientNotes(models.Model):
