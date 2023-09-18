@@ -325,3 +325,20 @@ def stock_alerts(request):
         }
         response.append(stockalert)
     return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def get_patient_notes(request,pk):
+    patient_notes = PatientNotes.objects.filter(patient=pk)
+    response=[]
+    for i in patient_notes:
+        notes = {
+            'id':i.id,
+            'notes':i.notes,
+            'captured':naturaltime(i.captured),
+         
+        }
+        response.append(notes)
+    return Response(response, status=status.HTTP_200_OK)

@@ -100,24 +100,24 @@ SIMPLE_JWT = {
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        # "DATABSE_URL":"postgresql://postgres:Z0HJGEJluNGmQrUtHBsO@containers-us-west-86.railway.app:6993/railway",
-        "NAME": "railway",
-        "USER": "postgres",
-        "PASSWORD": "GmQmtOFdKC5PYKg9kW7I",
-        "HOST": "containers-us-west-96.railway.app",
-        "PORT": "6414",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         # "DATABSE_URL":"postgresql://postgres:Z0HJGEJluNGmQrUtHBsO@containers-us-west-86.railway.app:6993/railway",
+#         "NAME": "railway",
+#         "USER": "postgres",
+#         "PASSWORD": "GmQmtOFdKC5PYKg9kW7I",
+#         "HOST": "containers-us-west-96.railway.app",
+#         "PORT": "6414",
+#     }
+# }
 
 
 # Password validation7405
