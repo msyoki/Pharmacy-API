@@ -16,6 +16,7 @@ from datetime import datetime
 from django.db import models
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.utils import timezone
+from django.utils.timezone import timedelta
 
 CustomUser = get_user_model()
 
@@ -226,13 +227,14 @@ def calculate_daily_sales_total(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_credit_sales_balance(request):
-    # Calculate the sum of total_amount - paid_amount for credit sales
+    # Total Unpaid Credit from pharmacy sales to date
+    start_date = datetime.now().date()
     credit_sales_balance = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False).aggregate(
         credit_sales_balance=Sum(models.F('total_amount') - models.F('paid_amount'))
     )['credit_sales_balance'] or 0.00
 
     # Return the result as JSON response
-    response_data = {'total': credit_sales_balance}
+    response_data = {'total': credit_sales_balance,'start_date':start_date,'end_date':start_date}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -240,13 +242,14 @@ def calculate_credit_sales_balance(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_credit_sales_balance_lab(request):
-    # Calculate the sum of total_amount - paid_amount for credit sales
+    # Total Unpaid Credit from lab billing to 
+    start_date = datetime.now().date()
     credit_sales_balance = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True).aggregate(
         credit_sales_balance=Sum(models.F('total_amount') - models.F('paid_amount'))
     )['credit_sales_balance'] or 0.00
 
     # Return the result as JSON response
-    response_data = {'total': credit_sales_balance}
+    response_data = {'total': credit_sales_balance,'start_date':start_date,'end_date':start_date}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -254,13 +257,15 @@ def calculate_credit_sales_balance_lab(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_non_credit_sales(request):
-    # Calculate the total of total_amount for non-credit sales
-    total_non_credit_sales = Sale.objects.filter(is_lab_bill=False).aggregate(
+    # Daily total chash in from pharmacy sale
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=1)
+    total_non_credit_sales = Sale.objects.filter(is_lab_bill=False,created__range=(start_date,end_date)).aggregate(
         total_non_credit_sales=Sum('paid_amount')
     )['total_non_credit_sales'] or 0.00
 
     # Return the result as JSON response
-    response_data = {'total': total_non_credit_sales}
+    response_data = {'total': total_non_credit_sales,'start_date':start_date,'end_date':start_date}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -268,13 +273,16 @@ def calculate_total_non_credit_sales(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_non_credit_sales_lab(request):
-    # Calculate the total of total_amount for non-credit sales
-    total_non_credit_sales = Sale.objects.filter(is_lab_bill=True).aggregate(
+    # Daily total chash in from lab billings
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=1)
+
+    total_non_credit_sales = Sale.objects.filter(is_lab_bill=True,created__range=(start_date,end_date)).aggregate(
         total_non_credit_sales=Sum('paid_amount')
     )['total_non_credit_sales'] or 0.00
 
     # Return the result as JSON response
-    response_data = {'total': total_non_credit_sales}
+    response_data = {'total': total_non_credit_sales,'start_date':start_date,'end_date':start_date}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -282,13 +290,15 @@ def calculate_total_non_credit_sales_lab(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_sales(request):
-    # Calculate the total of total_amount for non-credit sales
-    total_sales = Sale.objects.filter(is_lab_bill=False).aggregate(
+     # Daily total sales value Pharmacy
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=1)
+    total_sales = Sale.objects.filter(is_lab_bill=False,created__range=(start_date,end_date)).aggregate(
         total_sales=Sum('total_amount')
     )['total_sales'] or 0.00
 
     # Return the result as JSON response
-    response_data = {'total': total_sales}
+    response_data = {'total': total_sales,'start_date':start_date,'end_date':start_date}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -296,13 +306,15 @@ def calculate_total_sales(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_sale_lab(request):
-    # Calculate the total of total_amount for non-credit sales
-    total_sales = Sale.objects.filter(is_lab_bill=True).aggregate(
+    # Daily total sales value LAB
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=1)
+    total_sales = Sale.objects.filter(is_lab_bill=True,created__range=(start_date,end_date)).aggregate(
         total_sales=Sum('total_amount')
     )['total_sales'] or 0.00
 
     # Return the result as JSON response
-    response_data = {'total': total_sales}
+    response_data = {'total': total_sales,'start_date':start_date,'end_date':start_date}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
