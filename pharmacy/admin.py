@@ -9,7 +9,7 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
-    list_display = ('id','created','user')
+    list_display = ('id','created','is_credit_sale','user')
 
 @admin.register(SaleItem)
 class SaleItemAdmin(admin.ModelAdmin):

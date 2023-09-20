@@ -140,20 +140,21 @@ class Patient(models.Model):
     dob = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
 
+    @property
+    def getFullName(self):
+        full_name = f'{self.first_name} {self.last_name}'
+        return full_name
 
 class Sale(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     is_lab_bill = models.BooleanField(default=False)
-    lab_request_details = models.CharField(max_length=300,null=True)
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True)
-    paid_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    lab_request_details = models.CharField(max_length=300,null=True,blank=True)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True,blank=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     is_credit_sale = models.BooleanField(default=False)
     user = models.ForeignKey(CustomUser,on_delete=models.DO_NOTHING)
-    customer = models.CharField(max_length=100,blank=True)
-    customer_number = models.CharField(max_length=100,blank=True)
-    customer_location = models.CharField(max_length=100,blank=True)
-
+  
 
     @property
     def getSaleItems(self):

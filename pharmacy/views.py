@@ -326,7 +326,7 @@ def all_captured_stock(request):
     stock = Stock.objects.all()
     response_data=[]
     for i in stock:
-        stockitem = {'id':i.id,'quantity': i.quantity, 'receivedby':i.receivedby, 'purchase_price':i.purchase_price,'captured':i.captured, 'product':i.getProductName,'product_id':i.product.id}
+        stockitem = {'id':i.id,'quantity': i.quantity, 'receivedby':i.receivedby, 'purchase_price':i.purchase_price,'captured':naturaltime(i.captured), 'product':i.getProductName,'product_id':i.product.id}
         response_data.append(stockitem)
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -339,7 +339,7 @@ def credit_sales_summary(request):
     response_data=[]
     for i in credit_sales:
         if i.paid_amount != i.total_amount:
-            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.customer, 'customer_number':i.customer_number,'customer_location':i.customer_location, 'staff':i.user.getFullName}
+            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
             response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
 
