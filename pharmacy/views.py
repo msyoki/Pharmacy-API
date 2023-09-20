@@ -358,6 +358,32 @@ def cash_sales_summary(request):
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
+def credit_sales_summary_lab(request):
+    credit_sales = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True)
+    response_data=[]
+    for i in credit_sales:
+        if i.paid_amount != i.total_amount:
+            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
+            response_data.append(sale)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def cash_sales_summary_lab(request):
+    cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=True)
+    response_data=[]
+    for i in  cash_sales:
+        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount, 'staff':i.user.getFullName}
+        response_data.append(sale)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
 def sale_summary(request,pk):
     sale = Sale.objects.get(pk=pk)
     
@@ -366,7 +392,8 @@ def sale_summary(request,pk):
         'created':naturaltime(sale.created),
         'total_amount': sale.total_amount,
         'saleItems':sale.getSaleItems,
-        'staff':sale.user.getFullName
+        'staff':sale.user.getFullName,
+        'description':sale.lab_request_details
     }
     return Response(response, status=status.HTTP_200_OK)
 

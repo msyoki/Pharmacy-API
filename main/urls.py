@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from pharmacy.views import StockViewSet,LabRequestViewSet,calculate_total_non_credit_sales_lab,calculate_total_sale_lab,calculate_credit_sales_balance_lab,get_patient_notes,PatientNotesViewSet,sale_summary,stock_alerts,PatientViewSet,cash_sales_summary,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
+from pharmacy.views import credit_sales_summary_lab,cash_sales_summary_lab,StockViewSet,LabRequestViewSet,calculate_total_non_credit_sales_lab,calculate_total_sale_lab,calculate_credit_sales_balance_lab,get_patient_notes,PatientNotesViewSet,sale_summary,stock_alerts,PatientViewSet,cash_sales_summary,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
 
 router = DefaultRouter()
 
@@ -51,7 +51,9 @@ urlpatterns = [
     path('api/cssummary/',credit_sales_summary, name='credit_sales_summary'),  
     path('api/cassummary/',cash_sales_summary, name='cash_sales_summary'),
 
-  
+    path('api/cssummarylab/',credit_sales_summary_lab, name='credit_sales_summary_lab'),  
+    path('api/cassummarylab/',cash_sales_summary_lab, name='cash_sales_summary_lab'),
+
     path('api/salesummary/<int:pk>/',sale_summary, name='sale_summary'),
     path('api/stockalerts/',stock_alerts, name='stock_alerts'),
     path('api/getpatientnotes/<int:pk>/',get_patient_notes, name='get_patient_notes')
