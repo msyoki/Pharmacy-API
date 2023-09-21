@@ -87,16 +87,17 @@ AUTH_USER_MODEL = 'pharmacy.CustomUser'  # Replace 'customuser' with the actual 
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Token expiration time
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1), 
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # Token expiration time
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7), 
     'ROTATE_REFRESH_TOKENS': True,
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # Refresh token expiration time
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),  # Lifetime of the refresh token
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=7),  # Lifetime of the refresh token
     'SLIDING_TOKEN_REFRESH_ON_ACCESS': True,
     'SLIDING_TOKEN_REFRESH_ON_LOGIN': True,
     'SLIDING_TOKEN_REFRESH_ON_PASSWORD_CHANGE': True,
-    'SLIDING_TOKEN_REFRESH_AFTER_INACTIVITY': timedelta(days=1),  # Refresh token inactivity expiration time
+    'SLIDING_TOKEN_REFRESH_AFTER_INACTIVITY': timedelta(days=7),  # Refresh token inactivity expiration time
 }
+
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
