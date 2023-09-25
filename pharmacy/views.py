@@ -10,7 +10,7 @@ from .models import Product,Supplier,SaleItem, Sale,StockAlert,Stock,Patient,Lab
 from .serializers import ProductSerializer,LabRequestSerializer,PatientNotesSerializer,PatientSerializer,SupplierSerializer,StockSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
 
 
-from django.db.models import Sum
+from django.db.models import Sum,Min, Max
 from django.db.models.functions import TruncDate
 from datetime import datetime
 from django.db import models
@@ -158,7 +158,7 @@ class SaleViewSet(viewsets.ModelViewSet):
         # Calculate total_amount based on SaleItem prices
         total_amount = 0
         if sale_serializer.validated_data['is_lab_bill']:
-            pass
+           pass
         else:
             for item_data in sale_items_data:
                 product_id = item_data['product']
@@ -172,18 +172,29 @@ class SaleViewSet(viewsets.ModelViewSet):
 
         # If it's a credit sale, set paid_amount to the posted value (if provided)
         # Otherwise, set it to total_amount
-        if sale_serializer.validated_data['is_credit_sale']:
+        
+    
+        if sale_serializer.validated_data['is_credit_sale']: 
+            total_amount = request.data.get('total_amount')
             paid_amount = request.data.get('paid_amount', total_amount)
+            sale_serializer.validated_data['paid_amount'] = paid_amount
+
         else:
-            paid_amount = total_amount
+            if sale_serializer.validated_data['is_lab_bill']:
+                total_amount = request.data.get('total_amount')
+                sale_serializer.validated_data['paid_amount'] = total_amount
+            else:
+                sale_serializer.validated_data['paid_amount'] = total_amount
+            
 
-        sale_serializer.validated_data['paid_amount'] = paid_amount
 
+        
+       
         # Save the Sale instance
         sale = sale_serializer.save()
 
         # Save the SaleItem instances with a reference to the Sale
-        if sale_serializer.validated_data['is_lab_bill']:\
+        if sale_serializer.validated_data['is_lab_bill']:
             pass
         else:
             for item_data in sale_items_data:
@@ -228,13 +239,22 @@ def calculate_daily_sales_total(request):
 @permission_classes([])  # Disable permission checks for this view
 def calculate_credit_sales_balance(request):
     # Total Unpaid Credit from pharmacy sales to date
-    start_date = datetime.now().date()
-    credit_sales_balance = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False).aggregate(
-        credit_sales_balance=Sum(models.F('total_amount') - models.F('paid_amount'))
-    )['credit_sales_balance'] or 0.00
+
+
+    result = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False).aggregate(
+        total_credit_sales=Sum(models.F('total_amount') - models.F('paid_amount')),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_credit_sales = result['total_credit_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
+
+
 
     # Return the result as JSON response
-    response_data = {'total': credit_sales_balance,'start_date':start_date,'end_date':start_date}
+    response_data = {'total': total_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -243,13 +263,19 @@ def calculate_credit_sales_balance(request):
 @permission_classes([])  # Disable permission checks for this view
 def calculate_credit_sales_balance_lab(request):
     # Total Unpaid Credit from lab billing to 
-    start_date = datetime.now().date()
-    credit_sales_balance = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True).aggregate(
-        credit_sales_balance=Sum(models.F('total_amount') - models.F('paid_amount'))
-    )['credit_sales_balance'] or 0.00
+
+    result = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True).aggregate(
+        total_credit_sales=Sum(models.F('total_amount') - models.F('paid_amount')),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_credit_sales = result['total_credit_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
 
     # Return the result as JSON response
-    response_data = {'total': credit_sales_balance,'start_date':start_date,'end_date':start_date}
+    response_data = {'total': total_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -257,15 +283,21 @@ def calculate_credit_sales_balance_lab(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_non_credit_sales(request):
-    # Daily total chash in from pharmacy sale
-    start_date = datetime.now().date()
-    end_date = start_date + timedelta(days=1)
-    total_non_credit_sales = Sale.objects.filter(is_lab_bill=False,created__range=(start_date,end_date)).aggregate(
-        total_non_credit_sales=Sum('paid_amount')
-    )['total_non_credit_sales'] or 0.00
+
+        
+    result = Sale.objects.filter(is_lab_bill=False).aggregate(
+        total_non_credit_sales=Sum('paid_amount'),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_non_credit_sales = result['total_non_credit_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
+
 
     # Return the result as JSON response
-    response_data = {'total': total_non_credit_sales,'start_date':start_date,'end_date':start_date}
+    response_data = {'total': total_non_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -273,16 +305,22 @@ def calculate_total_non_credit_sales(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_non_credit_sales_lab(request):
-    # Daily total chash in from lab billings
-    start_date = datetime.now().date()
-    end_date = start_date + timedelta(days=1)
 
-    total_non_credit_sales = Sale.objects.filter(is_lab_bill=True,created__range=(start_date,end_date)).aggregate(
-        total_non_credit_sales=Sum('paid_amount')
-    )['total_non_credit_sales'] or 0.00
+    
+    result = Sale.objects.filter(is_lab_bill=True).aggregate(
+        total_non_credit_sales=Sum('paid_amount'),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_non_credit_sales = result['total_non_credit_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
+
+  
 
     # Return the result as JSON response
-    response_data = {'total': total_non_credit_sales,'start_date':start_date,'end_date':start_date}
+    response_data = {'total': total_non_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -291,14 +329,19 @@ def calculate_total_non_credit_sales_lab(request):
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_sales(request):
      # Daily total sales value Pharmacy
-    start_date = datetime.now().date()
-    end_date = start_date + timedelta(days=1)
-    total_sales = Sale.objects.filter(is_lab_bill=False,created__range=(start_date,end_date)).aggregate(
-        total_sales=Sum('total_amount')
-    )['total_sales'] or 0.00
+
+    result = Sale.objects.filter(is_lab_bill=False).aggregate(
+        total_sales=Sum('total_amount'),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_sales = result['total_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
 
     # Return the result as JSON response
-    response_data = {'total': total_sales,'start_date':start_date,'end_date':start_date}
+    response_data = {'total': total_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -307,14 +350,19 @@ def calculate_total_sales(request):
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_sale_lab(request):
     # Daily total sales value LAB
-    start_date = datetime.now().date()
-    end_date = start_date + timedelta(days=1)
-    total_sales = Sale.objects.filter(is_lab_bill=True,created__range=(start_date,end_date)).aggregate(
-        total_sales=Sum('total_amount')
-    )['total_sales'] or 0.00
+
+    result = Sale.objects.filter(is_lab_bill=True).aggregate(
+        total_sales=Sum('total_amount'),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_sales = result['total_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
 
     # Return the result as JSON response
-    response_data = {'total': total_sales,'start_date':start_date,'end_date':start_date}
+    response_data = {'total': total_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -375,7 +423,7 @@ def cash_sales_summary_lab(request):
     cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=True)
     response_data=[]
     for i in  cash_sales:
-        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount, 'staff':i.user.getFullName}
+        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
         response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
 
