@@ -399,8 +399,12 @@ def cash_sales_summary(request):
     cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=False)
     response_data=[]
     for i in  cash_sales:
-        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount, 'staff':i.user.getFullName}
-        response_data.append(sale)
+        if i.patient:
+            sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
+            response_data.append(sale)
+        else:
+            sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':'Null', 'customer_number':'Null','customer_location':'Null', 'staff':i.user.getFullName}
+            response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
