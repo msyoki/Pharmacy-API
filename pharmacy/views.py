@@ -279,6 +279,61 @@ def calculate_credit_sales_balance_lab(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_credit_sales_balance_today(request):
+    # Total Unpaid Credit from pharmacy sales to date
+
+    today = timezone.now().date()
+    start_of_day = datetime.combine(today, time.min)
+    end_of_day = datetime.combine(today, time.max)
+
+    result = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False,created__range=(start_of_day, end_of_day)).aggregate(
+        total_credit_sales=Sum(models.F('total_amount') - models.F('paid_amount')),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_credit_sales = result['total_credit_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
+
+
+
+    # Return the result as JSON response
+    response_data = {'total': total_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def calculate_credit_sales_balance_lab_today(request):
+    # Total Unpaid Credit from lab billing to 
+    today = timezone.now().date()
+    start_of_day = datetime.combine(today, time.min)
+    end_of_day = datetime.combine(today, time.max)
+
+    result = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True,created__range=(start_of_day, end_of_day)).aggregate(
+        total_credit_sales=Sum(models.F('total_amount') - models.F('paid_amount')),
+        oldest_created_date=Min('created'),
+        latest_created_date=Max('created')
+    )
+
+    total_credit_sales = result['total_credit_sales'] or 0.00
+    oldest_created_date = result['oldest_created_date']
+    latest_created_date = result['latest_created_date']
+
+    # Return the result as JSON response
+    response_data = {'total': total_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+
 from django.utils import timezone
 
 @api_view(['GET'])
