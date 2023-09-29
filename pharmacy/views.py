@@ -12,7 +12,7 @@ from .serializers import ProductSerializer,LabRequestSerializer,PatientNotesSeri
 
 from django.db.models import Sum,Min, Max
 from django.db.models.functions import TruncDate
-from datetime import datetime
+from datetime import datetime,time
 from django.db import models
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.utils import timezone
@@ -279,13 +279,20 @@ def calculate_credit_sales_balance_lab(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+from django.utils import timezone
+
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_non_credit_sales(request):
+    today = timezone.now().date()
+    start_of_day = datetime.combine(today, time.min)
+    end_of_day = datetime.combine(today, time.max)
 
-        
-    result = Sale.objects.filter(is_lab_bill=False).aggregate(
+    result = Sale.objects.filter(
+        is_lab_bill=False,
+        created__range=(start_of_day, end_of_day)
+    ).aggregate(
         total_non_credit_sales=Sum('paid_amount'),
         oldest_created_date=Min('created'),
         latest_created_date=Max('created')
@@ -295,9 +302,12 @@ def calculate_total_non_credit_sales(request):
     oldest_created_date = result['oldest_created_date']
     latest_created_date = result['latest_created_date']
 
-
     # Return the result as JSON response
-    response_data = {'total': total_non_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
+    response_data = {
+        'total': total_non_credit_sales,
+        'start_date': naturaltime(oldest_created_date),
+        'end_date': naturaltime(latest_created_date)
+    }
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -306,12 +316,19 @@ def calculate_total_non_credit_sales(request):
 @permission_classes([])  # Disable permission checks for this view
 def calculate_total_non_credit_sales_lab(request):
 
-    
-    result = Sale.objects.filter(is_lab_bill=True).aggregate(
+    today = timezone.now().date()
+    start_of_day = datetime.combine(today, time.min)
+    end_of_day = datetime.combine(today, time.max)
+
+    result = Sale.objects.filter(
+        is_lab_bill=True,
+        created__range=(start_of_day, end_of_day)
+    ).aggregate(
         total_non_credit_sales=Sum('paid_amount'),
         oldest_created_date=Min('created'),
         latest_created_date=Max('created')
     )
+
 
     total_non_credit_sales = result['total_non_credit_sales'] or 0.00
     oldest_created_date = result['oldest_created_date']
@@ -330,7 +347,14 @@ def calculate_total_non_credit_sales_lab(request):
 def calculate_total_sales(request):
      # Daily total sales value Pharmacy
 
-    result = Sale.objects.filter(is_lab_bill=False).aggregate(
+    today = timezone.now().date()
+    start_of_day = datetime.combine(today, time.min)
+    end_of_day = datetime.combine(today, time.max)
+
+    result = Sale.objects.filter(
+        is_lab_bill=False,
+        created__range=(start_of_day, end_of_day)
+    ).aggregate(
         total_sales=Sum('total_amount'),
         oldest_created_date=Min('created'),
         latest_created_date=Max('created')
@@ -351,12 +375,18 @@ def calculate_total_sales(request):
 def calculate_total_sale_lab(request):
     # Daily total sales value LAB
 
-    result = Sale.objects.filter(is_lab_bill=True).aggregate(
+    today = timezone.now().date()
+    start_of_day = datetime.combine(today, time.min)
+    end_of_day = datetime.combine(today, time.max)
+
+    result = Sale.objects.filter(
+        is_lab_bill=True,
+        created__range=(start_of_day, end_of_day)
+    ).aggregate(
         total_sales=Sum('total_amount'),
         oldest_created_date=Min('created'),
         latest_created_date=Max('created')
     )
-
     total_sales = result['total_sales'] or 0.00
     oldest_created_date = result['oldest_created_date']
     latest_created_date = result['latest_created_date']

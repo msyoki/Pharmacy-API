@@ -136,7 +136,7 @@ class Patient(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     gender = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100,unique=True)
+    phone = models.CharField(max_length=100)
     dob = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
 
@@ -155,6 +155,18 @@ class Sale(models.Model):
     is_credit_sale = models.BooleanField(default=False)
     user = models.ForeignKey(CustomUser,on_delete=models.DO_NOTHING)
   
+    def delete(self, *args, **kwargs):
+        # Retrieve all sale items associated with this sale
+        sale_items = SaleItem.objects.filter(sale=self)
+
+        # Add the quantities of sale items back to their linked products
+        for sale_item in sale_items:
+            product = sale_item.product
+            product.quantity += sale_item.quantity
+            product.save()
+
+        # Delete the sale instance
+        super(Sale, self).delete(*args, **kwargs)
 
     @property
     def getSaleItems(self):
@@ -208,3 +220,7 @@ class SaleItem(models.Model):
             stock_alert.save()
 
         super(SaleItem, self).save(*args, **kwargs)
+
+
+ 
+

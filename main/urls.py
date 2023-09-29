@@ -50,10 +50,8 @@ urlpatterns = [
     path('api/allstock/',all_captured_stock, name='all_captured_stock'),
     path('api/cssummary/',credit_sales_summary, name='credit_sales_summary'),  
     path('api/cassummary/',cash_sales_summary, name='cash_sales_summary'),
-
     path('api/cssummarylab/',credit_sales_summary_lab, name='credit_sales_summary_lab'),  
     path('api/cassummarylab/',cash_sales_summary_lab, name='cash_sales_summary_lab'),
-
     path('api/salesummary/<int:pk>/',sale_summary, name='sale_summary'),
     path('api/stockalerts/',stock_alerts, name='stock_alerts'),
     path('api/getpatientnotes/<int:pk>/',get_patient_notes, name='get_patient_notes')
