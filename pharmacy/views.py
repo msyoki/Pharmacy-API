@@ -468,11 +468,15 @@ def all_captured_stock(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def credit_sales_summary(request):
-    credit_sales = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False)
+    credit_sales = Sale.objects.filter(is_credit_sale=True,is_lab_bill=False).order_by('-created')
     response_data=[]
     for i in credit_sales:
-        if i.paid_amount != i.total_amount:
+        # if i.paid_amount != i.total_amount:
+        if i.patient:
             sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
+            response_data.append(sale)
+        else:
+            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':'Null', 'customer_number':'Null','customer_location':'Null', 'staff':i.user.getFullName}
             response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -481,7 +485,7 @@ def credit_sales_summary(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def cash_sales_summary(request):
-    cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=False)
+    cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=False).order_by('-created')
     response_data=[]
     for i in  cash_sales:
         if i.patient:
@@ -496,11 +500,15 @@ def cash_sales_summary(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def credit_sales_summary_lab(request):
-    credit_sales = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True)
+    credit_sales = Sale.objects.filter(is_credit_sale=True,is_lab_bill=True).order_by('-created')
     response_data=[]
     for i in credit_sales:
-        if i.paid_amount != i.total_amount:
+        # if i.paid_amount != i.total_amount:
+        if i.patient:
             sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
+            response_data.append(sale)
+        else:
+            sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':'Null', 'customer_number':'Null','customer_location':'Null', 'staff':i.user.getFullName}
             response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -509,11 +517,15 @@ def credit_sales_summary_lab(request):
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
 def cash_sales_summary_lab(request):
-    cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=True)
+    cash_sales = Sale.objects.filter(is_credit_sale=False,is_lab_bill=True).order_by('-created')
     response_data=[]
     for i in  cash_sales:
-        sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
-        response_data.append(sale)
+        if i.patient:
+            sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
+            response_data.append(sale)
+        else:
+            sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':'Null', 'customer_number':'Null','customer_location':'Null', 'staff':i.user.getFullName}
+            response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
 
 
