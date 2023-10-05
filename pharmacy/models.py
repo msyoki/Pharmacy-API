@@ -135,7 +135,7 @@ class StockAlert(models.Model):
 class Patient(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    patient_no = models.CharField(max_length=100)
+    patient_no = models.CharField(max_length=100,null=True,blank=True)
     gender = models.CharField(max_length=100)
     phone = models.CharField(max_length=100)
     dob = models.CharField(max_length=100)
