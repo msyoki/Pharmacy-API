@@ -504,8 +504,12 @@ def credit_sales_summary_lab(request):
     response_data=[]
     for i in credit_sales:
         # if i.paid_amount != i.total_amount:
-        sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
-        response_data.append(sale)
+        if i.patient:
+            sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':i.patient.getFullName, 'customer_number':i.patient.phone,'customer_location':i.patient.address, 'staff':i.user.getFullName}
+            response_data.append(sale)
+        else:
+            sale = {'id':i.id,'created':naturaltime(i.created),'total_amount': i.total_amount,'customer':'Null', 'customer_number':'Null','customer_location':'Null', 'staff':i.user.getFullName}
+            response_data.append(sale)
 
     return Response(response_data, status=status.HTTP_200_OK)
 
