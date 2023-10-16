@@ -150,16 +150,17 @@ class SaleViewSet(viewsets.ModelViewSet):
         sale_serializer = self.get_serializer(data=request.data)
         sale_serializer.is_valid(raise_exception=True)
 
-        # Serialize the SaleItem data
-        sale_items_data = request.data.get('sale_items', [])
-        sale_items_serializer = SaleItemSerializer(data=sale_items_data, many=True)
-        sale_items_serializer.is_valid(raise_exception=True)
+       
 
         # Calculate total_amount based on SaleItem prices
         total_amount = 0
         if sale_serializer.validated_data['is_lab_bill']:
            pass
         else:
+            # Serialize the SaleItem data
+            sale_items_data = request.data.get('sale_items', [])
+            sale_items_serializer = SaleItemSerializer(data=sale_items_data, many=True)
+            sale_items_serializer.is_valid(raise_exception=True)
             for item_data in sale_items_data:
                 product_id = item_data['product']
                 quantity = item_data['quantity']
@@ -580,4 +581,22 @@ def get_patient_notes(request,pk):
          
         }
         response.append(notes)
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def sale_items(request,pk):
+    sale = Sale.objects.get(pk=pk)
+    saleitems = SaleItem.objects.filter(sale=sale)
+    response=[]
+    for i in saleitems:
+        saleitem = {
+            'id':i.id,
+            'product':i.product.name,
+            'quantity':i.quantity,
+            'sale':i.sale.id,
+        }
+        response.append(saleitem)
     return Response(response, status=status.HTTP_200_OK)
