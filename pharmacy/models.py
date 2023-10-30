@@ -140,11 +140,27 @@ class Patient(models.Model):
     phone = models.CharField(max_length=100)
     dob = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
+    pnumber = models.CharField(max_length=100,unique=True, null=True,blank=True)
 
     @property
     def getFullName(self):
         full_name = f'{self.first_name} {self.last_name}'
         return full_name
+    
+    
+    def save(self, *args, **kwargs):
+        # Check if this is a new entry (not already in the database)
+        if not self.pnumber:
+            latest_patient = Patient.objects.order_by('-pnumber').first()
+            if latest_patient:
+                # Extract the number portion, increment, and format it.
+                last_number = int(latest_patient.pnumber[1:])
+                new_number = last_number + 1
+                self.pnumber = f'P{new_number:04d}'
+            else:
+                # If there are no existing patients, start from P0001.
+                self.pnumber = 'P0001'
+        super(Patient, self).save(*args, **kwargs)
 
 class Sale(models.Model):
     created = models.DateTimeField(auto_now_add=True)
