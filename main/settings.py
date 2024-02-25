@@ -132,7 +132,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         # "DATABSE_URL":"postgresql://postgres:Z0HJGEJluNGmQrUtHBsO@containers-us-west-86.railway.app:6993/railway",
-        "NAME": "test",
+        "NAME": "postgresSQL",
         "USER": "postgres",
         "PASSWORD": "psql21*",
         "HOST": "localhost",
