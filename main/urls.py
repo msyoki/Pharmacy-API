@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-from pharmacy.views import sale_items, calculate_credit_sales_balance_lab_today,calculate_credit_sales_balance_today,credit_sales_summary_lab,cash_sales_summary_lab,StockViewSet,LabRequestViewSet,calculate_total_non_credit_sales_lab,calculate_total_sale_lab,calculate_credit_sales_balance_lab,get_patient_notes,PatientNotesViewSet,sale_summary,stock_alerts,PatientViewSet,cash_sales_summary,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
+from pcl.views import get_users_list, user_groups,sale_items, calculate_credit_sales_balance_lab_today,calculate_credit_sales_balance_today,credit_sales_summary_lab,cash_sales_summary_lab,StockViewSet,LabRequestViewSet,calculate_total_non_credit_sales_lab,calculate_total_sale_lab,calculate_credit_sales_balance_lab,get_patient_notes,PatientNotesViewSet,sale_summary,stock_alerts,PatientViewSet,cash_sales_summary,credit_sales_summary,all_captured_stock,register_user,calculate_total_sales,calculate_daily_sales_total,calculate_total_non_credit_sales,calculate_credit_sales_balance,UserUpdateView,ProductViewSet,SaleViewSet,SupplierViewSet,UserViewSet, CustomTokenObtainPairView
 
 router = DefaultRouter()
 
@@ -32,12 +32,13 @@ router.register(r'labrequest',LabRequestViewSet)
 
 
 
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/', include(router.urls)),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Add this line
+    path('api/groups/',user_groups, name='user_groups'),
+    path('api/staff/',get_users_list, name='users_list'),
     path('api/user/update/', UserUpdateView.as_view(), name='user-update'),
     path('api/register/', register_user, name='register_user'),
     path('api/report/',calculate_daily_sales_total, name='sale_report'),

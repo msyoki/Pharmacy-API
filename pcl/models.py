@@ -170,7 +170,7 @@ class Sale(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     is_credit_sale = models.BooleanField(default=False)
-    user = models.ForeignKey(CustomUser,on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
   
     def delete(self, *args, **kwargs):
         # Retrieve all sale items associated with this sale

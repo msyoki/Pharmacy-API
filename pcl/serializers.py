@@ -20,6 +20,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['last_name'] = user.last_name
         token['is_active'] = user.is_active
         token['is_admin'] = user.is_admin
+        token['group'] = user.groups.first().name if user.groups.exists() else None
+
 
         return token
 

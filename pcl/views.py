@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from .models import Product,Supplier,SaleItem, Sale,StockAlert,Stock,Patient,LabRequest,PatientNotes
 from .serializers import ProductSerializer,LabRequestSerializer,PatientNotesSerializer,PatientSerializer,SupplierSerializer,StockSerializer,SaleItemSerializer,SaleSerializer,UserSerializer,CustomTokenObtainPairSerializer,UserUpdateSerializer
+from django.utils import timezone
 
 
 from django.db.models import Sum,Min, Max
@@ -17,6 +18,8 @@ from django.db import models
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.utils import timezone
 from django.utils.timezone import timedelta
+from django.contrib.auth.models import Group
+
 
 CustomUser = get_user_model()
 
@@ -25,62 +28,24 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     # http_method_names = ['get']
-
-
-
 class StockViewSet(viewsets.ModelViewSet):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
     permission_classes = [permissions.AllowAny]
-
-
-
 class LabRequestViewSet(viewsets.ModelViewSet):
     queryset = LabRequest.objects.all()
     serializer_class = LabRequestSerializer
     permission_classes = [permissions.AllowAny]
-
 class PatientNotesViewSet(viewsets.ModelViewSet):
     queryset = PatientNotes.objects.all()
     serializer_class = PatientNotesSerializer
     permission_classes = [permissions.AllowAny]
-
 class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
     permission_classes = [permissions.AllowAny]
-
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer  # Use the custom serializer
-
-
-@api_view(['POST'])
-@authentication_classes([])  # Disable authentication for this view
-@permission_classes([])  # Disable permission checks for this view
-def register_user(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    email = request.data.get('email')
-    first_name = request.data.get('first_name')
-    last_name = request.data.get('last_name')
-    is_admin = request.data.get('is_admin', False)
-    
-
-    if not username or not password or not email :
-        return Response({'error': 'Please provide username, email and password.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    user, created = CustomUser.objects.get_or_create(username=username,email=email,first_name=first_name,last_name=last_name)
-    if created:
-        user.set_password(password)
-        user.is_admin = is_admin  # Set the is_admin field
-        user.save()
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    else:
-        return Response({'error': 'Username or email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 class UserUpdateView(UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserUpdateSerializer
@@ -98,15 +63,10 @@ class UserUpdateView(UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
-
-
 class SupplierViewSet(viewsets.ModelViewSet):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
     permission_classes = [permissions.AllowAny]
-
-
-
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -138,8 +98,6 @@ class ProductViewSet(viewsets.ModelViewSet):
         # For instance, updating the captured timestamp:
         instance.captured = timezone.now()
         instance.save()
-
-
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all().order_by('-created') 
     serializer_class = SaleSerializer
@@ -209,6 +167,40 @@ class SaleViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(sale_serializer.data)
         return Response(sale_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+
+@api_view(['POST'])
+@authentication_classes([])  # Disable authentication for this view
+@permission_classes([])  # Disable permission checks for this view
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    email = request.data.get('email')
+    group_id = request.data.get('group')  # Assuming 'group' is sent as the ID of the selected group
+    first_name = request.data.get('first_name')
+    last_name = request.data.get('last_name')
+    is_admin = request.data.get('is_admin', False)
+
+    if not username or not password or not email:
+        return Response({'error': 'Please provide username, email, and password.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Fetch the group object from its ID
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return Response({'error': 'Invalid group ID.'}, status=status.HTTP_400_BAD_REQUEST)
+   
+    user, created = CustomUser.objects.get_or_create(username=username, email=email, first_name=first_name, last_name=last_name)
+    if created:
+        user.set_password(password)
+        user.groups.add(group)  # Assign the user to the specified group
+        user.is_admin = False
+        user.is_staff = True
+        user.save()  # Save the user object after setting the password and other fields
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'error': 'Username or email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -234,7 +226,6 @@ def calculate_daily_sales_total(request):
 
     return Response(results, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -258,7 +249,6 @@ def calculate_credit_sales_balance(request):
     response_data = {'total': total_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -281,6 +271,8 @@ def calculate_credit_sales_balance_lab(request):
 
 
 
+
+#### SALES MANAGEMENT 
 
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
@@ -308,7 +300,6 @@ def calculate_credit_sales_balance_today(request):
     response_data = {'total': total_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -331,11 +322,6 @@ def calculate_credit_sales_balance_lab_today(request):
     # Return the result as JSON response
     response_data = {'total': total_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-
-
-from django.utils import timezone
 
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
@@ -366,7 +352,6 @@ def calculate_total_non_credit_sales(request):
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -396,7 +381,6 @@ def calculate_total_non_credit_sales_lab(request):
     response_data = {'total': total_non_credit_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -424,7 +408,6 @@ def calculate_total_sales(request):
     response_data = {'total': total_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -451,8 +434,6 @@ def calculate_total_sale_lab(request):
     response_data = {'total': total_sales,'start_date':naturaltime(oldest_created_date),'end_date':naturaltime(latest_created_date)}
     return Response(response_data, status=status.HTTP_200_OK)
 
-
-
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
 @permission_classes([])  # Disable permission checks for this view
@@ -463,7 +444,6 @@ def all_captured_stock(request):
         stockitem = {'id':i.id,'quantity': i.quantity, 'receivedby':i.receivedby, 'purchase_price':i.purchase_price,'captured':naturaltime(i.captured), 'product':i.getProductName,'product_id':i.product.id}
         response_data.append(stockitem)
     return Response(response_data, status=status.HTTP_200_OK)
-
 
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
@@ -480,7 +460,6 @@ def credit_sales_summary(request):
             sale = {'id':i.id,'unpaid':i.total_amount - i.paid_amount,'created':naturaltime(i.created),'total_amount': i.total_amount, 'paid_amount':i.paid_amount, 'customer':'Null', 'customer_number':'Null','customer_location':'Null', 'staff':i.user.getFullName}
             response_data.append(sale)
     return Response(response_data, status=status.HTTP_200_OK)
-
 
 @api_view(['GET'])
 @authentication_classes([])  # Disable authentication for this view
@@ -600,3 +579,31 @@ def sale_items(request,pk):
         }
         response.append(saleitem)
     return Response(response, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def user_groups(request):
+    groups = Group.objects.all()
+    group_list = [{'id': group.id, 'name': group.name} for group in groups]
+    return Response(group_list, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def get_users_list(request):
+    users = CustomUser.objects.exclude(is_superuser=True)
+    user_data = []
+    for user in users:
+        group = user.groups.first()  # Assuming each user belongs to only one group
+        # group_data = {"id": group.id, "name": group.name} if group else None
+        user_info = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "group": group.name,
+        }
+        user_data.append(user_info)
+    return Response(user_data)

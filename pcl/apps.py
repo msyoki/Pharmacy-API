@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class PharmacyConfig(AppConfig):
+class PclConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'pharmacy'
+    name = 'pcl'
